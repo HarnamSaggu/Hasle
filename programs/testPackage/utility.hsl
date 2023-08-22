@@ -1,0 +1,8 @@
+foo(msg) {
+	i = 0
+	while (i < msg.len) {
+		println(space + msg)
+		space += " "
+		i++
+	}
+}

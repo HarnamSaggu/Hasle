@@ -1,0 +1,53 @@
+# FRACTRAN
+# args: a0 a1 a2 ... an
+# a0 is starting value (input)
+# a1 ... an is the program
+
+main(args) {
+	startingValue = int(args[0])
+	program = interpret(subList(args, 1, len(args)))
+
+	accumulator = startingValue
+	print(accumulator, ", ")
+
+	continue = 1
+	while (continue) {
+		next = -1
+		i = 0
+		while (i < len(program) && next == -1) {
+			fraction = program[i]
+			if (makesInt(fraction, accumulator)) {
+				next = fraction.num * accumulator / fraction.den
+			}
+
+			i++
+		}
+		accumulator = next
+
+		if (accumulator == -1) {
+			continue = 0
+		} else {
+			print(accumulator, ", ")
+		}
+	}
+}
+
+interpret(strings) {
+	fractions = {}[len(strings)]
+	i = 0
+	while (i < len(strings)) {
+		operands = split(strings[i], "/")
+		fractions[i] = fraction(int(operands[0]), int(operands[1]))
+		i++
+	}
+	<- fractions
+}
+
+struct fraction(a, b) {
+	num = a
+	den = b
+}
+
+makesInt(frac, op) {
+	<- frac.num * op % frac.den == 0
+}

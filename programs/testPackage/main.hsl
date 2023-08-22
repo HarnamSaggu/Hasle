@@ -1,0 +1,10 @@
+main(args) {
+	$ space = ""
+
+	i = 0
+	while (i < args.len) {
+		foo(args[i])
+		foo(" ")
+		i++
+	}
+}

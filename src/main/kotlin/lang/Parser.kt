@@ -1,0 +1,645 @@
+package lang
+
+import lang.Type.*
+import java.math.BigDecimal
+import java.math.BigInteger
+
+
+fun parse(tokens: List<Token>): Pair<MainMethod, List<MethodDeclaration>> {
+	var mainMethod = MainMethod(listOf())
+	val methodDeclarations = mutableListOf<MethodDeclaration>()
+
+	var index = 0
+	while (index < tokens.size) {
+		val token = tokens[index]
+
+		if (token.type == MAIN) {
+			val section = with(collectSection(tokens, index + 5)) {
+				index = second
+				first
+			}
+
+
+			mainMethod = MainMethod(
+				itemiseTokens(section).map {
+					parseItem(it)
+				}
+			)
+		} else if (token.type == NAME || token.type == STRUCT) {
+			val isMethodDeclaration = token.type == NAME
+			val name = if (isMethodDeclaration) token.value else tokens[index + 1].value
+			index += if (isMethodDeclaration) 2 else 3
+
+			val parameterNames = mutableListOf<String>()
+			while (index < tokens.size && tokens[index].type != CLOSE) {
+				if (tokens[index].type == NAME) {
+					parameterNames.add(tokens[index].value)
+				}
+
+				index++
+			}
+
+			val section = with(collectSection(tokens, index + 2)) {
+				index = second
+				first
+			}
+			val items = itemiseTokens(section).toMutableList()
+
+			if (isMethodDeclaration) {
+				val returnStatement: Command = if (
+					items.isNotEmpty() &&
+					items.last().isNotEmpty() &&
+					items.last().first().type == RETURN
+				) {
+					parseItem(items.last()).also { items.removeLast() }
+				} else {
+					Value(BigInteger("0"))
+				}
+
+				methodDeclarations.add(
+					MethodDeclaration(
+						name,
+						parameterNames.toList(),
+						items.map { parseItem(it) },
+						returnStatement
+					)
+				)
+			} else {
+				val fields = mutableMapOf<String, Command>()
+				items.forEach {
+					fields[it.first().value] = parseExpression(it.drop(2))
+				}
+
+				methodDeclarations.add(
+					StructDeclaration(
+						name,
+						parameterNames.toList(),
+						fields.toMap()
+					)
+				)
+			}
+		}
+
+		index++
+	}
+
+	return mainMethod to methodDeclarations
+}
+
+private val assign = listOf(Token(ASSIGN))
+private val open = listOf(Token(OPEN))
+private val close = listOf(Token(CLOSE))
+private val complexAssignments =
+	listOf(PLUS_ASSIGN, MINUS_ASSIGN, MULTIPLY_ASSIGN, DIVIDE_ASSIGN, MOD_ASSIGN, POWER_ASSIGN)
+
+private fun expandSyntacticSugar(tokens: List<Token>): List<Token> {
+	val types = tokens.map { it.type }
+	var indexOfComplexAssignment = -1
+	val containsComplexAssignment = types.mapIndexed { index, it ->
+		if (complexAssignments.contains(it)) {
+			indexOfComplexAssignment = index
+			1
+		} else {
+			0
+		}
+	}.sum() == 1
+
+	var simplifiedTokens = tokens
+
+	val first = tokens.first()
+	if (first.type == NAME) {
+		if (containsComplexAssignment) {
+			val variableReferenceTokens = tokens.take(indexOfComplexAssignment)
+			val valueTokens = tokens.subList(indexOfComplexAssignment + 1, tokens.size)
+			val assignmentOperator = tokens[indexOfComplexAssignment].toOperation()
+
+			simplifiedTokens = variableReferenceTokens +
+					assign +
+					variableReferenceTokens +
+					listOf(assignmentOperator) +
+					open +
+					valueTokens +
+					close
+		} else if (tokens.last().type == INCREMENT || tokens.last().type == DECREMENT) {
+			simplifiedTokens = tokens.dropLast(1) +
+					assign +
+					tokens.dropLast(1) +
+					listOf(tokens.last().toOperation()) +
+					listOf(Token(INTEGER, "1"))
+		}
+	} else if (first.type == GLOBAL && containsComplexAssignment) {
+		val variableReferenceTokens = tokens.subList(1, indexOfComplexAssignment)
+		val valueTokens = tokens.subList(indexOfComplexAssignment + 1, tokens.size)
+		val assignmentOperator = tokens[indexOfComplexAssignment].toOperation()
+
+		simplifiedTokens = listOf(first) +
+				variableReferenceTokens +
+				assign +
+				variableReferenceTokens +
+				listOf(assignmentOperator) +
+				open +
+				valueTokens +
+				close
+	}
+
+	return simplifiedTokens
+}
+
+private fun parseItem(unsimplifiedTokens: List<Token>): Command {
+	val tokens = expandSyntacticSugar(unsimplifiedTokens)
+	val first = tokens.first()
+	return when (first.type) {
+		IF, WHILE -> {
+			var index = 2
+			val booleanTokens = with(collectSection(tokens, index, OPEN, CLOSE)) {
+				index = second + 1
+				this.first
+			}
+			val booleanExpression = parseExpression(booleanTokens.toList())
+
+			val firstSectionTokens = with(collectSection(tokens, index + 1)) {
+				index = this.second
+				this.first
+			}
+			val firstSectionItems = itemiseTokens(firstSectionTokens)
+			val firstSection = firstSectionItems.map { parseItem(it) }
+
+			if (first.type == IF) {
+				val secondSection = if (index + 1 < tokens.size && tokens[index + 1].type == ELSE) {
+					val secondSectionTokens = tokens.dropLast(1).drop(index + 3)
+					val secondSectionItems = itemiseTokens(secondSectionTokens)
+					secondSectionItems.map { parseItem(it) }
+				} else {
+					listOf()
+				}
+
+				If(booleanExpression, firstSection, secondSection)
+			} else {
+				While(booleanExpression, firstSection)
+			}
+		}
+
+		GLOBAL -> parseAssignment(tokens)
+
+		NAME -> when {
+			tokens.size > 2 -> {
+				when (tokens[1].type) {
+					ASSIGN, GET, OPEN_S -> {
+						parseAssignment(tokens)
+					}
+
+					OPEN -> {
+						MethodCall(
+							first.value,
+							collectArguments(tokens, 2).first.map { parseExpression(it) }
+						)
+					}
+
+					else -> throw Error(
+						"Unrecognised Item: ${reproduceSourceCode(tokens)}" +
+								"\tInstance of Type.NAME not followed by appropriate tokens"
+					)
+				}
+			}
+
+			else -> throw Error("Unrecognised Item: ${reproduceSourceCode(tokens)}")
+		}
+
+		RETURN -> parseExpression(tokens.drop(1))
+
+		else -> throw Error("Unrecognised Item: ${reproduceSourceCode(tokens)}")
+	}
+}
+
+private fun parseVariableReference(tokens: List<Token>): VariableReference {
+	val name = tokens.first().value
+
+	var index = 1
+	val accessors = mutableListOf<Access>()
+	while (index < tokens.size && tokens[index].type != ASSIGN) {
+		val token = tokens[index]
+
+		if (token.type == GET && index + 1 < tokens.size) {
+			accessors.add(
+				Property(tokens[index + 1].value)
+			)
+		} else if (token.type == OPEN_S) {
+			val indexTokens = with(collectSection(tokens, index + 1, OPEN_S, CLOSE_S)) {
+				index = second
+				first
+			}
+			accessors.add(
+				Index(parseExpression(indexTokens))
+			)
+		}
+
+		index++
+	}
+
+	return VariableReference(name, accessors.toList())
+}
+
+private fun parseAssignment(tokens: List<Token>): Assignment {
+	val isGlobal = tokens.first().type == GLOBAL
+	val index = if (isGlobal) 1 else 0
+	val assignIndex = tokens.map { it.type }.indexOf(ASSIGN)
+	val variableReference = parseVariableReference(tokens.subList(index, assignIndex))
+	val value = parseExpression(tokens.drop(assignIndex + 1))
+
+	return Assignment(
+		variableReference,
+		value,
+		isGlobal
+	)
+}
+
+private fun parseExpression(unsimplifiedTokens: List<Token>): Command {
+	val tokens = replaceOperators(unsimplifiedTokens)
+
+	val first = tokens[0]
+	if (first.type == NAME) {
+		return if (tokens.size >= 3 && tokens[1].type == OPEN) {
+			MethodCall(
+				first.value,
+				collectArguments(tokens, 2).first.map {
+					parseExpression(it)
+				}
+			)
+		} else {
+			parseVariableReference(tokens)
+		}
+	} else {
+		when (first.type) {
+			STRING -> return Value(first.value)
+			CHAR -> return Value(first.value[0])
+			INTEGER -> return Value(BigInteger(first.value))
+			DECIMAL -> return Value(BigDecimal(first.value))
+
+			else -> {
+				if (first.type == OPEN_C) {
+					if (tokens.last().type == CLOSE_C) {
+						val elements = collectArguments(tokens, 1).first
+						return DefinedArray(
+							if (elements.isEmpty()) {
+								listOf()
+							} else {
+								elements.map { parseExpression(it) }
+							}
+						)
+					} else if (tokens[1].type == CLOSE_C && tokens[2].type == OPEN_S && tokens.last().type == CLOSE_S) {
+						val indexTokens = tokens.drop(3).dropLast(1)
+
+						val index = parseExpression(indexTokens)
+
+						return SizedArray(index)
+					}
+				} else if (first.type == OPEN && tokens.last().type == CLOSE) {
+					return parseExpression(tokens.drop(1).dropLast(1))
+				}
+
+
+				throw Error("Unrecognised Expression: ${reproduceSourceCode(tokens)}")
+			}
+		}
+	}
+}
+
+private fun replaceOperators(tokens: List<Token>): List<Token> {
+	val groups = expressionToGroups(tokens)
+	val groupsUnary = replaceUnaryOperators(groups)
+	val groupsUnaryBinary = replaceBinaryOperator(groupsUnary)
+
+	return if (groupsUnaryBinary.isEmpty()) {
+		listOf()
+	} else {
+		groupsUnaryBinary[0].unravel()
+	}
+}
+
+private fun replaceUnaryOperators(groups: List<Group>): List<Group> {
+	val newGroups = mutableListOf<Group>()
+	val accumulator = mutableListOf<Group>()
+	for (group in groups) {
+		if (group is BinaryOperator) {
+			newGroups.add(reduceUnaryBlock(accumulator.reversed()))
+			newGroups.add(group)
+			accumulator.clear()
+		} else {
+			accumulator.add(group)
+		}
+	}
+	if (accumulator.isNotEmpty()) {
+		newGroups.add(reduceUnaryBlock(accumulator.reversed()))
+	}
+	return newGroups
+}
+
+fun reduceUnaryBlock(block: List<Group>): Group {
+	var finalOperation = block.first()
+	var index = 1
+	while (index < block.size) {
+		val nextOperation = block[index] as UnaryOperator
+		nextOperation.expression = finalOperation
+		finalOperation = nextOperation
+		index++
+	}
+	return finalOperation
+}
+
+private fun replaceBinaryOperator(groups: List<Group>): List<Group> =
+	when {
+		groups.isEmpty() -> {
+			listOf()
+		}
+
+		groups.size == 1 -> {
+			groups
+		}
+
+		else -> {
+			var winner = 1
+			var winnerPriority = -1
+			var index = 1
+			while (index < groups.size) {
+				val group = groups[index]
+				if (group is BinaryOperator) {
+					if (group.priority() > winnerPriority) {
+						winner = index
+						winnerPriority = group.priority()
+					}
+				} else {
+					throw Error("Missing Binary operator: $groups")
+				}
+				index += 2
+			}
+
+			val operator = groups[winner] as BinaryOperator
+			operator.expression0 = groups[winner - 1]
+			operator.expression1 = groups[winner + 1]
+			replaceBinaryOperator(
+				groups.take(winner - 1) +
+						operator +
+						groups.subList(winner + 2, groups.size)
+			)
+		}
+	}
+
+private fun expressionToGroups(tokens: List<Token>): List<Group> {
+	val groups = mutableListOf<Group>()
+
+	var index = 0
+	val accumulator = mutableListOf<Token>()
+	while (index < tokens.size) {
+		val token = tokens[index]
+
+		when {
+			token.isUnaryOperator() -> {
+				if (accumulator.isNotEmpty()) {
+					groups.add(Bundle(accumulator.toList()))
+					accumulator.clear()
+				}
+				groups.add(UnaryOperator(token.type))
+			}
+
+			token.isBinaryOperator() -> {
+				groups.add(Bundle(accumulator.toList()))
+				accumulator.clear()
+				groups.add(BinaryOperator(token.type))
+			}
+
+			token.isOpenBracket() -> {
+				accumulator.add(token)
+
+				index++
+				var count = 1
+				while (index < tokens.size && count != 0) {
+					val currentToken = tokens[index]
+
+					if (currentToken.isOpenBracket()) {
+						count++
+					} else if (currentToken.isCloseBracket()) {
+						count--
+					}
+
+					accumulator.add(currentToken)
+
+					if (count != 0) {
+						index++
+					}
+				}
+			}
+
+			else -> {
+				accumulator.add(token)
+			}
+		}
+
+		index++
+	}
+	if (accumulator.isNotEmpty()) {
+		groups.add(Bundle(accumulator.toList()))
+	}
+
+	return groups
+}
+
+private fun collectSection(
+	tokens: List<Token>,
+	startIndex: Int,
+	openType: Type = OPEN_C,
+	closeType: Type = CLOSE_C
+): Pair<List<Token>, Int> {
+	val section = mutableListOf<Token>()
+
+	var index = startIndex
+	var count = 1
+	while (index < tokens.size && count > 0) {
+		val token = tokens[index]
+
+		if (token.type == openType) {
+			count++
+		} else if (token.type == closeType) {
+			count--
+		}
+
+		if (count > 0) {
+			section.add(token)
+			index++
+		} else if (count == 0) {
+			return section.toList() to index
+		}
+	}
+
+	return listOf<Token>() to -1
+}
+
+private fun collectArguments(
+	tokens: List<Token>,
+	startIndex: Int
+): Pair<List<List<Token>>, Int> {
+	val arguments = mutableListOf<List<Token>>()
+
+	var index = startIndex
+	var count = 1
+	val accumulator = mutableListOf<Token>()
+	while (index < tokens.size) {
+		val token = tokens[index]
+
+		if (count == 1 && token.type == COMMA) {
+			arguments.add(accumulator.toList())
+			accumulator.clear()
+		} else {
+			if (token.isOpenBracket()) {
+				count++
+			} else if (token.isCloseBracket()) {
+				count--
+
+				if (count == 0) {
+					if (accumulator.isNotEmpty()) {
+						arguments.add(accumulator.toList())
+					}
+					return arguments.toList() to index
+				}
+			}
+
+			accumulator.add(token)
+		}
+
+		index++
+	}
+
+	return listOf<List<Token>>() to -1
+}
+
+private fun itemiseTokens(tokens: List<Token>): List<List<Token>> {
+	val items = mutableListOf<List<Token>>()
+
+	var index = 0
+	val accumulator = mutableListOf<Token>()
+	while (index < tokens.size) {
+		val token = tokens[index]
+
+		when {
+			accumulator.isEmpty() && (token.type == IF || token.type == WHILE) -> {
+				accumulator.add(token)
+				index++
+				accumulator.add(tokens[index])
+				val booleanTokens = with(collectSection(tokens, index + 1, OPEN, CLOSE)) {
+					index = second
+					first
+				}
+				accumulator.addAll(booleanTokens)
+				accumulator.add(tokens[index])
+				index++
+				accumulator.add(tokens[index])
+				val mainSection = with(collectSection(tokens, index + 1)) {
+					index = second
+					first
+				}
+				accumulator.addAll(mainSection)
+				accumulator.add(tokens[index])
+
+				if (
+					index + 1 < tokens.size &&
+					token.type == IF &&
+					tokens[index + 1].type == ELSE
+				) {
+					accumulator.add(tokens[index + 1])
+					accumulator.add(tokens[index + 2])
+
+					accumulator.addAll(
+						with(collectSection(tokens, index + 3)) {
+							index = this.second
+							this.first
+						}
+					)
+					accumulator.add(tokens[index])
+				}
+			}
+
+			accumulator.isNotEmpty() && token.type == LINE_SEPARATOR -> {
+				items.add(accumulator.toList())
+				accumulator.clear()
+			}
+
+			token.type != LINE_SEPARATOR -> {
+				accumulator.add(token)
+			}
+		}
+		index++
+	}
+
+	return items.toList()
+}
+
+private val openBrackets = listOf(OPEN, OPEN_C, OPEN_S)
+private val closeBrackets = listOf(CLOSE, CLOSE_C, CLOSE_S)
+private val unaryOperators = listOf(NOT, COPY)
+private val binaryOperators = listOf(
+	PLUS,
+	MINUS,
+	MULTIPLY,
+	DIVIDE,
+	MOD,
+	AT,
+	POWER,
+	EQUALS,
+	NOT_EQUALS,
+	GREATER,
+	LESS,
+	GREATER_EQUALS,
+	LESS_EQUALS,
+	AND,
+	OR
+)
+
+private fun Token.isOpenBracket(): Boolean =
+	openBrackets.contains(type)
+
+private fun Token.isCloseBracket(): Boolean =
+	closeBrackets.contains(type)
+
+private fun Token.isBinaryOperator(): Boolean =
+	binaryOperators.contains(type)
+
+private fun BinaryOperator.priority(): Int =
+	when (operator) {
+		AT -> 12
+		POWER -> 11
+		DIVIDE -> 10
+		MULTIPLY -> 9
+		MINUS -> 8
+		PLUS -> 7
+		MOD -> 6
+
+		GREATER -> 3
+		LESS -> 3
+		GREATER_EQUALS -> 3
+		LESS_EQUALS -> 3
+		EQUALS -> 3
+		NOT_EQUALS -> 3
+
+		AND -> 2
+		OR -> 1
+
+		else -> -1
+	}
+
+private fun Token.isUnaryOperator(): Boolean =
+	unaryOperators.contains(type)
+
+private fun Token.toOperation() = Token(
+	when (type) {
+		PLUS_ASSIGN -> PLUS
+		MINUS_ASSIGN -> MINUS
+		MULTIPLY_ASSIGN -> MULTIPLY
+		DIVIDE_ASSIGN -> DIVIDE
+		MOD_ASSIGN -> MOD
+		POWER_ASSIGN -> POWER
+
+		INCREMENT -> PLUS
+		DECREMENT -> MINUS
+
+		else -> type
+	}
+)

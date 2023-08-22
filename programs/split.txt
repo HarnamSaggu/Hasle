@@ -1,0 +1,64 @@
+main(args) {
+	$ denoms = {5000, 2000, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1}
+	$ pastAns = {}
+
+	println("Amount in pence:")
+	split(int(readln()), {})
+}
+
+split(x, prev) {
+	if (x == 0) {
+		col = collapse(prev)
+		ans = represent(col)
+		if (!contains(pastAns, ans)) {
+			pastAns += ans
+			println(ans)
+		}
+	} else {
+		i = 0
+		while (i < len(denoms)) {
+			denom = denoms[i]
+
+			count = 1
+			while (denom * count <= x) {
+				split(x - denom * count, prev + log(count, i))
+				count++
+			}
+
+			i++
+		}
+	}
+}
+
+log(count, denomIndex) {
+	x = {}[len(denoms)]
+	x[denomIndex] = count
+	<- x
+}
+
+represent(log) {
+	str = ""
+	i = 0
+	while (i < len(log)) {
+		if (log[i] > 0) {
+			str = join(str, log[i], " (", denoms[i], "p), ")
+		}
+		i++
+	}
+	<- substring(str, 0, len(str) - 2)
+}
+
+collapse(prev) {
+	total = {}[len(denoms)]
+	i = 0
+	while (i < len(prev)) {
+		j = 0
+		while (j < len(prev[i])) {
+			total[j] = total[j] + prev @ i @ j
+			j++
+		}
+
+		i++
+	}
+	<- total
+}
