@@ -407,6 +407,15 @@ class StandardLibrary(
             }
         },
 
+        "bool" to {
+            if (it.size == 1 && it[0] is IntData) {
+                val a = it[0] as IntData
+                StringData(if (a.value <= zero.value) "false" else "true")
+            } else {
+                zero
+            }
+        },
+
         "readln" to {
             StringData(input())
         },
