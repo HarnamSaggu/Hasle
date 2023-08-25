@@ -528,10 +528,6 @@ val definedMethods: Map<String, (List<Data>) -> Data> = mapOf(
 		}
 	},
 
-	"join" to {
-		StringData(it.joinToString(""))
-	},
-
 	"len" to {
 		if (it.size == 1) {
 			IntData(

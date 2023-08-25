@@ -174,6 +174,10 @@ fun lex(sourceCode: String): List<Token> {
 				"if" -> IF
 				"else" -> ELSE
 				"struct" -> STRUCT
+
+				"true" -> TRUE
+				"false" -> FALSE
+
 				else -> NAME
 			}
 		}

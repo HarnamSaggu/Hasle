@@ -274,6 +274,8 @@ private fun parseExpression(unsimplifiedTokens: List<Token>): Command {
 			CHAR -> return Value(first.value[0])
 			INTEGER -> return Value(BigInteger(first.value))
 			DECIMAL -> return Value(BigDecimal(first.value))
+			TRUE -> return Value(BigInteger("1"))
+			FALSE -> return Value(BigInteger("0"))
 
 			else -> {
 				if (first.type == OPEN_C) {

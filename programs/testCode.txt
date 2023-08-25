@@ -1,3 +1,5 @@
 main(args) {
     println("Hello world")
+    sleep(1000)
+    println("goodbye")
 }

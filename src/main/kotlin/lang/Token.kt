@@ -27,6 +27,8 @@ fun reproduceSourceCode(tokens: List<Token>): String =
 			CHAR -> "'${it.value}'"
 			INTEGER -> it.value
 			DECIMAL -> it.value
+			TRUE -> "tue"
+			FALSE -> "false"
 
 			ASSIGN -> "="
 			RETURN -> "<-"

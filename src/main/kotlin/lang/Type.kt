@@ -12,6 +12,8 @@ enum class Type {
 	STRING,             // "hello world"
 	INTEGER,            // 3_141_592
 	DECIMAL,            // 3.141_592
+	TRUE,               // true
+	FALSE,              // false
 
 	ASSIGN,             // =
 	RETURN,             // <-
