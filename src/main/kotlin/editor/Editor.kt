@@ -7,10 +7,7 @@ import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.io.File
 import javax.swing.*
-import javax.swing.border.Border
 import javax.swing.plaf.basic.BasicScrollBarUI
-import javax.swing.plaf.basic.BasicSplitPaneDivider
-import javax.swing.plaf.basic.BasicSplitPaneUI
 import javax.swing.text.StyleConstants
 import javax.swing.text.StyleContext
 import javax.swing.text.StyledDocument
@@ -41,7 +38,19 @@ class Editor : JFrame("Hasle - programs/autosave.txt") {
     private val autoSaveTimer = 2_000
     private val tabSize = 4
 
-    private val autoSaveFile = File("programs/autosave.txt")
+    private var settingsFile = File("config/settings.txt")
+    private var settingsMap = settingsFile.readLines().associate {
+        val line = it.trim()
+        val index = line.indexOf(":")
+        line.take(index) to line.substring(index + 2).dropLast(1)
+    }
+    private var autoSaveFile = File(settingsMap["autosave"] ?: "")
+    private var jarPath: String = settingsMap["jar"] ?: ""
+    private var flag = settingsMap["flag"]?.first() ?: ""
+    private var runPath: String = settingsMap["run"] ?: ""
+    private var args = ""
+
+    private var currentFile = autoSaveFile
 
     init {
         layout = BorderLayout(5, 5)
@@ -138,80 +147,82 @@ class Editor : JFrame("Hasle - programs/autosave.txt") {
         }
         highlighter.execute()
 
-        editorPane.text = autoSaveFile.readText()
+        editorPane.text = currentFile.readText()
         highlightText()
     }
 
     private fun createMenuBar() {
-        val menuBar = JMenuBar()
-        menuBar.border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
-        menuBar.background = backgroundColor
-        mainPanel.add(menuBar, BorderLayout.SOUTH)
+        val toolBar = JPanel()
+        toolBar.maximumSize = Dimension(Int.MAX_VALUE, 30)
+        toolBar.border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        toolBar.background = backgroundColor
+        mainPanel.add(toolBar, BorderLayout.SOUTH)
 
-        val fileMenu = createMenu("File", 'f')
-        menuBar.add(fileMenu)
+        val openItem = createToolBarItem("Open", 'o')
+        openItem.addActionListener {
+            val dialog = FileDialog(this, "Select File to Open")
+            dialog.mode = FileDialog.LOAD
+            dialog.isVisible = true
+            val filePath = dialog.directory + dialog.file
+            dialog.dispose()
+            currentFile = File(filePath)
+            editorPane.text = currentFile.readText()
+            title = "Hasle - ${currentFile.name}"
+            highlightText()
+        }
+        toolBar.add(openItem)
 
-        val openItem = createMenuItem("Open", 'o')
-        fileMenu.add(openItem)
+        val saveItem = createToolBarItem("Save", 's')
+        saveItem.addActionListener {
+            currentFile.writeText(doc.getText(0, doc.length))
+        }
+        toolBar.add(saveItem)
 
-        val saveItem = createMenuItem("Save", 's')
-        fileMenu.add(saveItem)
+        val saveAsItem = createToolBarItem("Save As", 'a')
+        saveAsItem.addActionListener {
+            val dialog = FileDialog(this, "Select File to Save to")
+            dialog.mode = FileDialog.SAVE
+            dialog.isVisible = true
+            val filePath = dialog.directory + dialog.file
+            dialog.dispose()
+            currentFile = File(filePath)
+            title = "Hasle - ${currentFile.name}"
+            currentFile.writeText(doc.getText(0, doc.length))
+        }
+        toolBar.add(saveAsItem)
 
-        val saveAsItem = createMenuItem("Save As", 'a')
-        fileMenu.add(saveAsItem)
+        val runItem = createToolBarItem("Run", 'r')
+        runItem.addActionListener {
+            Runtime.getRuntime().exec(arrayOf(
+                runPath,
+                currentFile.name,
+                "java -jar $jarPath $flag ${currentFile.path} $args"
+            ))
+        }
+        toolBar.add(runItem)
 
-        val runMenu = createMenu("Run", 'r')
-        menuBar.add(runMenu)
+        val argsItem = createToolBarItem("Args", 'g')
+        argsItem.addActionListener {
+            args = JOptionPane.showInputDialog(
+                this,
+                "<html>Program arguments: \"$args\"<br>New program arguments:</html>"
+            ) ?: args
+        }
+        toolBar.add(argsItem)
 
-        val runItem = createMenuItem("Run", 'r')
-        runMenu.add(runItem)
+        val refreshItem = createToolBarItem("Refresh", 'f')
+        refreshItem.addActionListener { highlightText() }
+        toolBar.add(refreshItem)
 
-        val terminateItem = createMenuItem("Terminate", 't')
-        runMenu.add(terminateItem)
-
-        val viewEditor = createMenu("View", 'v')
-        menuBar.add(viewEditor)
-
-        val refreshItem = createMenuItem("Refresh", 'r')
-        viewEditor.add(refreshItem)
-
-        val autoScrollItem = createMenuItem("Auto scroll: OFF", 'a')
-        viewEditor.add(autoScrollItem)
+        val settingsItem = createToolBarItem("Settings", 'e')
+        settingsItem.addActionListener {
+            Runtime.getRuntime().exec(arrayOf("Notepad", "programs/settings.txt"))
+        }
+        toolBar.add(settingsItem)
     }
 
-    private fun createSplitPane(leftPanel: JPanel, rightPanel: JPanel): JSplitPane {
-        val splitPane = JSplitPane(SwingConstants.VERTICAL, leftPanel, rightPanel)
-        splitPane.background = backgroundColor
-        splitPane.border = BorderFactory.createEmptyBorder()
-        splitPane.setUI(object : BasicSplitPaneUI() {
-            override fun createDefaultDivider(): BasicSplitPaneDivider {
-                return object : BasicSplitPaneDivider(this) {
-                    override fun setBorder(b: Border) {
-                        /* unused */
-                    }
-
-                    override fun paint(g: Graphics) {
-                        g.color = sliderColor
-                        g.fillRect(0, 0, size.width, size.height)
-                        super.paint(g)
-                    }
-                }
-            }
-        })
-        return splitPane
-    }
-
-    private fun createMenu(label: String, mnemonic: Char): JMenu {
-        val menu = JMenu(label)
-        menu.mnemonic = KeyEvent.getExtendedKeyCodeForChar(mnemonic.code)
-        menu.font = editorFont
-        menu.foreground = Color.WHITE
-        menu.background = backgroundColor
-        return menu
-    }
-
-    private fun createMenuItem(label: String, mnemonic: Char): JMenuItem {
-        val item = JMenuItem(label)
+    private fun createToolBarItem(label: String, mnemonic: Char): JButton {
+        val item = JButton(label)
         item.mnemonic = KeyEvent.getExtendedKeyCodeForChar(mnemonic.code)
         item.font = editorFont
         item.foreground = Color.WHITE

@@ -1,9 +1,9 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="Hasle:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/Hasle_jar</output-path>
+  <artifact type="jar" name="HasleEditor:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/HasleEditor_jar</output-path>
     <root id="archive" name="Hasle.jar">
       <element id="directory" name="META-INF">
-        <element id="file-copy" path="$PROJECT_DIR$/consoleJar/META-INF/MANIFEST.MF" />
+        <element id="file-copy" path="$PROJECT_DIR$/editorJar/META-INF/MANIFEST.MF" />
       </element>
       <element id="module-output" name="Hasle.main" />
       <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.9.0/8ee15ef0c67dc83d874f412d84378d7f0eb50b63/kotlin-stdlib-1.9.0.jar" path-in-jar="/" />

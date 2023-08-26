@@ -1,0 +1,4 @@
+jar:"C:\Users\theto\IdeaProjects\Hasle\out\artifacts\Hasle_jar\Hasle.jar"
+flag:"f"
+autosave:"C:\Users\theto\IdeaProjects\Hasle\programs\autosave.txt"
+run:"C:\Users\theto\IdeaProjects\Hasle\config\run.bat"

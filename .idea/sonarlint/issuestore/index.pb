@@ -15,3 +15,9 @@ E
 programs/fractran.txt,2\c\2c4b94e9fe96c419daa368c5a16e5ff87b92ae43
 ;
 gradlew.bat,2\a\2a45a911a8f1836b0b6c5b758962572012d8f8c3
+@
+build.gradle.kts,d\b\dbcff70658daf80b53ce624f6adcaa529df5ed8d
+N
+src/main/kotlin/lang/Runner.kt,3\1\31af0afc9395c07a53a52e8cc33a39c340def78a
+W
+'src/main/kotlin/lang/StandardLibrary.kt,6\9\69f2668952bd52d5baf38ff935c019e8c623082c
