@@ -1,5 +1,11 @@
 main(args) {
-    println("Hello world")
-    sleep(1000)
-    println("goodbye")
+    seconds = int(readln())
+    println("hello world")
+    i = 0
+    while (i < seconds) {
+        sleep(1000)
+        println("you've waited: ", i + 1, " seconds")
+        i++
+    }
+    println("the end")
 }

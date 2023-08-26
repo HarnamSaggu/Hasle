@@ -20,8 +20,12 @@ class StandardLibrary(
         print(it)
     },
 
-    val exit: ((Int) -> Nothing) = { x ->
+    val exit: ((Int) -> Any) = { x ->
         exitProcess(x)
+    },
+
+    val sleep: ((Long) -> Any) = { x ->
+        Thread.sleep(x)
     }
 ) {
 
@@ -706,7 +710,7 @@ class StandardLibrary(
         "sleep" to {
             if (it.size == 1 && it[0] is IntData) {
                 val a = it[0] as IntData
-                Thread.sleep(a.value.toLong())
+                sleep(a.value.toLong())
             }
 
             zero
@@ -763,6 +767,7 @@ class StandardLibrary(
             } else {
                 exit(0)
             }
+            zero
         },
 
         "time" to {

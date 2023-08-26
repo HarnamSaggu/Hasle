@@ -63,11 +63,14 @@ class Runner(
 	output: ((Any) -> Unit) = {
         print(it)
     },
-	exit: ((Int) -> Nothing) = { x ->
+	exit: ((Int) -> Any) = { x ->
         exitProcess(x)
+    },
+    sleep: ((Long) -> Any) = { x ->
+        Thread.sleep(x)
     }
 ) {
-	private val standardLibrary: StandardLibrary = StandardLibrary(input, output, exit)
+	private val standardLibrary: StandardLibrary = StandardLibrary(input, output, exit, sleep)
 	private val dataManager: DataManager = DataManager()
 	private val methodMap = methodDeclarations.associateBy { it.methodName }
 
