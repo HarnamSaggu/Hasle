@@ -1,6 +1,8 @@
 package lang
 
-open class Command {
+import java.math.BigInteger
+
+abstract class Command {
 	override fun toString(): String {
 		return "(UNIDENTIFIED)"
 	}
@@ -27,7 +29,7 @@ class StructDeclaration(
 	val structName: String,
 	override val parameters: List<String>,
 	val fields: Map<String, Command>
-) : MethodDeclaration(structName, parameters, listOf(), Command()) {
+) : MethodDeclaration(structName, parameters, listOf(), Value(BigInteger("0"))) {
 	override fun toString(): String {
 		return "(struct).{$structName}.{$parameters}.{\n${fields.keys.joinToString("\n") {
 			"\t$it=\t${fields[it]}"

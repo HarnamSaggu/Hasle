@@ -13,7 +13,7 @@ fun wrap(value: Any): Data =
 		else -> throw Error("Cannot interpret value: (${value::class.java}) $value")
 	}
 
-open class Data(open val value: Any) {
+abstract class Data(open val value: Any) {
 	open val type: String = "NaN"
 
 	override fun equals(other: Any?): Boolean {
