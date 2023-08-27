@@ -73,8 +73,6 @@ O
 consoleJar/META-INF/MANIFEST.MF,e\6\e69a1fbe322a3856c73a0e2ad02e5bc858423244
 N
 editorJar/META-INF/MANIFEST.MF,e\a\eaebbed6afd1d57aa4c5ca36dc796c55b7a9ccee
->
-config/run.bat,0\f\0faefb2676ba088f19efef2f4f091297093119ed
 :
 
 .gitignore,a\5\a5cc2925ca8258af241be7e5b0381edf30266302

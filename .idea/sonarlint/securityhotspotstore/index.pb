@@ -74,7 +74,5 @@ N
 editorJar/META-INF/MANIFEST.MF,e\a\eaebbed6afd1d57aa4c5ca36dc796c55b7a9ccee
 w
 G.idea/sonarlint/issuestore/6/9/69f2668952bd52d5baf38ff935c019e8c623082c,2\7\2723ff26d52737b5c1e595ea25f04ad5fc71fab9
->
-config/run.bat,0\f\0faefb2676ba088f19efef2f4f091297093119ed
 w
 G.idea/sonarlint/issuestore/7/f/7fd111af66d6f7421b3c1209905146831184c4fb,f\d\fd2e79a9dcfde7e684dd71d850f5b93c4e21747e

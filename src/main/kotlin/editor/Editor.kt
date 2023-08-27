@@ -60,13 +60,14 @@ class Editor : JFrame() {
         minimumSize = Dimension(600, 400)
         background = backgroundColor
         font = editorFont
+        iconImage = ImageIcon("config/hasle.png").image
 
         mainPanel.background = backgroundColor
         add(mainPanel, BorderLayout.CENTER)
 
         val editorPanel = JPanel(BorderLayout(5, 5))
         editorPanel.background = backgroundColor
-        editorPanel.preferredSize = Dimension(1000, 850)
+        editorPanel.preferredSize = Dimension(1000, 750)
 
         editorPane = createTextPane()
         editorPane.foreground = Color.RED
@@ -200,8 +201,8 @@ class Editor : JFrame() {
             Runtime.getRuntime().exec(
                 arrayOf(
                     runPath,
-                    currentFile.name,
-                    "java -jar $jarPath $flag ${currentFile.path} $args"
+                    title,
+                    "\"java -jar $jarPath $flag ${currentFile.path} $args\""
                 )
             )
         }
