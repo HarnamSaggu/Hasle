@@ -22,53 +22,34 @@ class Editor : JFrame() {
     private val editorPane: JTextPane
     private val doc: StyledDocument
 
-    private val backgroundColor = Color(0x101010)
-    private val sliderColor = Color(0x141414)
-    private val variableColor = Color(0x93B3F5)
-    private val keywordColor = Color(0xCB633C)
-    private val operatorColor = Color(0x55E744)
-    private val bracketColor = Color(0xE0E0E0)
-    private val focusedBracketColor = Color(0x707070)
-    private val commentColor = Color(0x5E5E5E)
-    private val literalColor = Color(0x53914C)
-    private val numberColor = Color(0x1A6ABE)
-    private val caretColor = Color(0xFFF200)
+    private var backgroundColor = Color(0x101010)
+    private var sliderColor = Color(0x141414)
+    private var sliderButtonColor = Color(0x000000)
+    private var fontColor = Color(0xFFFFFF)
+    private var variableColor = Color(0x93B3F5)
+    private var keywordColor = Color(0xCB633C)
+    private var operatorColor = Color(0x55E744)
+    private var bracketColor = Color(0xE0E0E0)
+    private var focusedBracketColor = Color(0x707070)
+    private var commentColor = Color(0x5E5E5E)
+    private var literalColor = Color(0x53914C)
+    private var numberColor = Color(0x1A6ABE)
+    private var caretColor = Color(0xFFF200)
 
-    private var settingsFile = File("config/settings.txt")
-    private var settingsMap = settingsFile.readLines().associate {
-        val line = it.trim()
-        val index = line.indexOf(":")
-        if (line[index + 1] == '"' && line.last() == '"') {
-            line.take(index) to line.substring(index + 2).dropLast(1)
-        } else {
-            line.take(index) to line.substring(index + 1)
-        }
-    }
-    private var autoSaveFile = File(settingsMap["autosave"] ?: "")
-    private var jarPath: String = settingsMap["jar"] ?: ""
-    private var flag: Char = (settingsMap["flag"] ?: "f").first()
-    private var runPath: String = settingsMap["run"] ?: ""
-    private val editorFont = Font(
-        settingsMap["font-family"] ?: "Cascadia Code",
-        Font.PLAIN,
-        (settingsMap["font-size"] ?: "14").toInt()
-    )
-    private val autoSaveTimer = (settingsMap["autosave-timer"] ?: "2000").toInt()
-    private val tabSize = (settingsMap["tab-size"] ?: "4").toInt()
-    private var args = settingsMap["args"] ?: ""
-
-    private var currentFile = autoSaveFile
+    private var settingsFile = File("")
+    private var settingsMap = mapOf<String, String>()
+    private var autoSaveFile = File("")
+    private var jarPath = ""
+    private var flag = 'f'
+    private var runPath = ""
+    private var editorFont = Font("Cascadia Code", Font.PLAIN, 14)
+    private var autoSaveTimer = 2000
+    private var tabSize = 4
+    private var args = ""
+    private var currentFile = File("")
 
     init {
-        println(autoSaveFile)
-        println(jarPath)
-        println(flag)
-        println(runPath)
-        println(editorFont)
-        println(autoSaveTimer)
-        println(tabSize)
-        println(args)
-
+        loadSettings()
 
         layout = BorderLayout(5, 5)
         minimumSize = Dimension(600, 400)
@@ -84,7 +65,7 @@ class Editor : JFrame() {
         editorPanel.preferredSize = Dimension(1000, 750)
 
         editorPane = createTextPane()
-        editorPane.foreground = Color.RED
+        editorPane.foreground = fontColor
         doc = editorPane.styledDocument
         editorPane.addKeyListener(object : KeyListener {
             override fun keyTyped(e: KeyEvent?) {
@@ -168,6 +149,64 @@ class Editor : JFrame() {
         editorPane.text = currentFile.readText()
         title = "Hasle ${currentFile.path}"
         highlightText()
+    }
+
+    private fun loadSettings() {
+        settingsFile = File("config/settings.txt")
+        settingsMap = settingsFile.readLines().associate {
+            val line = it.trim()
+            if (line.isEmpty()) {
+                "" to ""
+            } else {
+                val index = line.indexOf(":")
+
+                if (index == -1) {
+                    "" to ""
+                } else {
+                    if (line[index + 1] == '"' && line.last() == '"') {
+                        line.take(index).trim() to line.substring(index + 2).dropLast(1).trim()
+                    } else {
+                        line.take(index).trim() to line.substring(index + 1).trim()
+                    }
+                }
+            }
+        }
+        autoSaveFile = File(settingsMap["autosave"] ?: "")
+        jarPath = settingsMap["jar"] ?: ""
+        flag = (settingsMap["flag"] ?: "f").first()
+        runPath = settingsMap["run"] ?: ""
+        editorFont = Font(
+            settingsMap["font-family"] ?: "Cascadia Code",
+            Font.PLAIN,
+            (settingsMap["font-size"] ?: "14").toInt()
+        )
+        autoSaveTimer = (settingsMap["autosave-timer"] ?: "2000").toInt()
+        tabSize = (settingsMap["tab-size"] ?: "4").toInt()
+        args = settingsMap["args"] ?: ""
+        currentFile = autoSaveFile
+        backgroundColor = loadColor("backgroundColor") ?: backgroundColor
+        sliderColor = loadColor("sliderColor") ?: sliderColor
+        sliderButtonColor = loadColor("sliderButtonColor") ?: sliderButtonColor
+        fontColor = loadColor("fontColor") ?: fontColor
+        variableColor = loadColor("variableColor") ?: variableColor
+        keywordColor = loadColor("keywordColor") ?: keywordColor
+        operatorColor = loadColor("operatorColor") ?: operatorColor
+        bracketColor = loadColor("bracketColor") ?: bracketColor
+        focusedBracketColor = loadColor("focusedBracketColor") ?: focusedBracketColor
+        commentColor = loadColor("commentColor") ?: commentColor
+        literalColor = loadColor("literalColor") ?: literalColor
+        numberColor = loadColor("numberColor") ?: numberColor
+        caretColor = loadColor("caretColor") ?: caretColor
+    }
+
+    private fun loadColor(name: String): Color? {
+        with(settingsMap[name]) {
+            return if (this != null) {
+                Color(Integer.decode(this))
+            } else {
+                null
+            }
+        }
     }
 
     private fun createMenuBar() {
@@ -257,7 +296,7 @@ class Editor : JFrame() {
         val item = JButton(label)
         item.mnemonic = KeyEvent.getExtendedKeyCodeForChar(mnemonic.code)
         item.font = editorFont
-        item.foreground = Color.WHITE
+        item.foreground = fontColor
         item.background = backgroundColor
         return item
     }
@@ -276,15 +315,15 @@ class Editor : JFrame() {
 
             override fun createDecreaseButton(orientation: Int): JButton? {
                 val button = super.createDecreaseButton(orientation)
-                button.background = Color.BLACK
-                button.foreground = Color.BLACK
+                button.background = sliderButtonColor
+                button.foreground = sliderButtonColor
                 return button
             }
 
             override fun createIncreaseButton(orientation: Int): JButton? {
                 val button = super.createIncreaseButton(orientation)
-                button.background = Color.BLACK
-                button.foreground = Color.BLACK
+                button.background = sliderButtonColor
+                button.foreground = sliderButtonColor
                 return button
             }
         }
@@ -304,7 +343,7 @@ class Editor : JFrame() {
 
         val regular = doc.addStyle("regular", def)
         StyleConstants.setFontFamily(def, editorFont.family)
-        StyleConstants.setForeground(def, Color.WHITE)
+        StyleConstants.setForeground(def, fontColor)
         StyleConstants.setFontSize(def, editorFont.size)
 
         var style = doc.addStyle("variable", regular)

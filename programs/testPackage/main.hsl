@@ -1,5 +1,9 @@
 main(args) {
 	$ space = ""
+ 
+ 	if (args.len == 0) {
+      		args = split(readln(), " ")
+  	}
 
 	i = 0
 	while (i < args.len) {
