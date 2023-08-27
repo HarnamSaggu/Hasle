@@ -92,7 +92,7 @@ class SizedArray(val size: Command) : Command() {
 	}
 }
 
-open class Access
+abstract class Access
 
 class Index(val index: Command) : Access() {
 	var int = -1
