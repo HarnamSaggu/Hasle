@@ -17,7 +17,7 @@ fun main() {
     Editor()
 }
 
-class Editor : JFrame("Hasle - programs/autosave.txt") {
+class Editor : JFrame() {
     private val mainPanel = JPanel(BorderLayout(5, 5))
     private val editorPane: JTextPane
     private val doc: StyledDocument
@@ -34,10 +34,6 @@ class Editor : JFrame("Hasle - programs/autosave.txt") {
     private val numberColor = Color(0x1A6ABE)
     private val caretColor = Color(0xFFF200)
 
-    private val editorFont = Font("Cascadia Code", Font.PLAIN, 14)
-    private val autoSaveTimer = 2_000
-    private val tabSize = 4
-
     private var settingsFile = File("config/settings.txt")
     private var settingsMap = settingsFile.readLines().associate {
         val line = it.trim()
@@ -48,7 +44,14 @@ class Editor : JFrame("Hasle - programs/autosave.txt") {
     private var jarPath: String = settingsMap["jar"] ?: ""
     private var flag = settingsMap["flag"]?.first() ?: ""
     private var runPath: String = settingsMap["run"] ?: ""
-    private var args = ""
+    private val editorFont = Font(
+        settingsMap["font-family"] ?: "Cascadia Code",
+        Font.PLAIN,
+        (settingsMap["font-size"] ?: "14").toInt()
+    )
+    private val autoSaveTimer = (settingsMap["autosave-timer"] ?: "2000").toInt()
+    private val tabSize = (settingsMap["tab-size"] ?: "4").toInt()
+    private var args = settingsMap["args"] ?: ""
 
     private var currentFile = autoSaveFile
 
@@ -148,6 +151,7 @@ class Editor : JFrame("Hasle - programs/autosave.txt") {
         highlighter.execute()
 
         editorPane.text = currentFile.readText()
+        title = "Hasle - ${currentFile.name}"
         highlightText()
     }
 
@@ -193,11 +197,13 @@ class Editor : JFrame("Hasle - programs/autosave.txt") {
 
         val runItem = createToolBarItem("Run", 'r')
         runItem.addActionListener {
-            Runtime.getRuntime().exec(arrayOf(
-                runPath,
-                currentFile.name,
-                "java -jar $jarPath $flag ${currentFile.path} $args"
-            ))
+            Runtime.getRuntime().exec(
+                arrayOf(
+                    runPath,
+                    currentFile.name,
+                    "java -jar $jarPath $flag ${currentFile.path} $args"
+                )
+            )
         }
         toolBar.add(runItem)
 
@@ -271,9 +277,9 @@ class Editor : JFrame("Hasle - programs/autosave.txt") {
         val def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE)
 
         val regular = doc.addStyle("regular", def)
-        StyleConstants.setFontFamily(def, "Cascadia Code")
+        StyleConstants.setFontFamily(def, editorFont.family)
         StyleConstants.setForeground(def, Color.WHITE)
-        StyleConstants.setFontSize(def, 14)
+        StyleConstants.setFontSize(def, editorFont.size)
 
         var style = doc.addStyle("variable", regular)
         StyleConstants.setForeground(style, variableColor)
