@@ -251,6 +251,7 @@ class Editor : JFrame() {
 
         val runItem = createToolBarItem("Run", 'r')
         runItem.addActionListener {
+            autoSaveFile.writeText(doc.getText(0, doc.length))
             Runtime.getRuntime().exec(
                 arrayOf(
                     runPath,

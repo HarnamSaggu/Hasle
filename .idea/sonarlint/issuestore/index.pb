@@ -1,6 +1,4 @@
 
-E
-programs/autosave.txt,2\6\2676a795fa34c0a755b5abc21d589f5753b9eb70
 S
 #src/main/kotlin/lang/DataManager.kt,7\f\7fd111af66d6f7421b3c1209905146831184c4fb
 M
@@ -57,10 +55,6 @@ Q.idea/sonarlint/securityhotspotstore/3/1/31af0afc9395c07a53a52e8cc33a39c340def7
 Q.idea/sonarlint/securityhotspotstore/8/5/85e492a1a121bdb5f1f2e94217de5aac61937c81,a\a\aab7f64fc661ea3cac08bfa0599af5babef212d9
 
 Q.idea/sonarlint/securityhotspotstore/7/f/7fd111af66d6f7421b3c1209905146831184c4fb,0\e\0e1a1255392230345392943d00f6b733f4bb0fb2
-M
-.idea/artifacts/Hasle_jar.xml,c\e\ce2d01ab98149bd1eb0d9f76805846e2c8873ff7
-S
-#.idea/artifacts/HasleEditor_jar.xml,e\f\efa92aefbc7387605d7aa990c18dd3b141ebb3d1
 w
 G.idea/sonarlint/issuestore/6/6/66ea9419069d896c6ea8c7d56cab26591e3d3013,a\7\a70d7fb9b6ea24a2997a85c7568c7f31cd0aa2af
 
@@ -76,5 +70,9 @@ N
 :
 
 .gitignore,a\5\a5cc2925ca8258af241be7e5b0381edf30266302
->
-config/run.bat,0\f\0faefb2676ba088f19efef2f4f091297093119ed
+P
+ programs/testPackage/utility.hsl,9\e\9e8905248092f9e6677c27314cbd93bdf9b9ff9b
+M
+programs/testPackage/main.hsl,9\3\93709cf475834da5064261db44cd39b94a269a97
+A
+programs/todo.txt,2\f\2ff30d0e0c787615aa2fdbbcc93b2e445b5eb591

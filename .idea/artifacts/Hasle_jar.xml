@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
   <artifact type="jar" name="Hasle:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/Hasle_jar</output-path>
+    <output-path>$PROJECT_DIR$/consoleJar</output-path>
     <root id="archive" name="Hasle.jar">
       <element id="directory" name="META-INF">
         <element id="file-copy" path="$PROJECT_DIR$/consoleJar/META-INF/MANIFEST.MF" />
