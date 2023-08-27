@@ -201,8 +201,8 @@ class Editor : JFrame() {
             Runtime.getRuntime().exec(
                 arrayOf(
                     runPath,
-                    title,
-                    "\"java -jar $jarPath $flag ${currentFile.path} $args\""
+                    currentFile.name,
+                    "java -jar $jarPath $flag ${currentFile.path} $args"
                 )
             )
         }
