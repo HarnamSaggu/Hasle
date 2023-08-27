@@ -38,11 +38,15 @@ class Editor : JFrame() {
     private var settingsMap = settingsFile.readLines().associate {
         val line = it.trim()
         val index = line.indexOf(":")
-        line.take(index) to line.substring(index + 2).dropLast(1)
+        if (line[index + 1] == '"' && line.last() == '"') {
+            line.take(index) to line.substring(index + 2).dropLast(1)
+        } else {
+            line.take(index) to line.substring(index + 1)
+        }
     }
     private var autoSaveFile = File(settingsMap["autosave"] ?: "")
     private var jarPath: String = settingsMap["jar"] ?: ""
-    private var flag = settingsMap["flag"]?.first() ?: ""
+    private var flag: Char = (settingsMap["flag"] ?: "f").first()
     private var runPath: String = settingsMap["run"] ?: ""
     private val editorFont = Font(
         settingsMap["font-family"] ?: "Cascadia Code",
@@ -56,6 +60,16 @@ class Editor : JFrame() {
     private var currentFile = autoSaveFile
 
     init {
+        println(autoSaveFile)
+        println(jarPath)
+        println(flag)
+        println(runPath)
+        println(editorFont)
+        println(autoSaveTimer)
+        println(tabSize)
+        println(args)
+
+
         layout = BorderLayout(5, 5)
         minimumSize = Dimension(600, 400)
         background = backgroundColor
@@ -152,7 +166,7 @@ class Editor : JFrame() {
         highlighter.execute()
 
         editorPane.text = currentFile.readText()
-        title = "Hasle - ${currentFile.name}"
+        title = "Hasle ${currentFile.path}"
         highlightText()
     }
 
@@ -172,7 +186,7 @@ class Editor : JFrame() {
             dialog.dispose()
             currentFile = File(filePath)
             editorPane.text = currentFile.readText()
-            title = "Hasle - ${currentFile.name}"
+            title = "Hasle ${currentFile.path}"
             highlightText()
         }
         toolBar.add(openItem)
@@ -191,7 +205,7 @@ class Editor : JFrame() {
             val filePath = dialog.directory + dialog.file
             dialog.dispose()
             currentFile = File(filePath)
-            title = "Hasle - ${currentFile.name}"
+            title = "Hasle ${currentFile.path}"
             currentFile.writeText(doc.getText(0, doc.length))
         }
         toolBar.add(saveAsItem)
@@ -217,13 +231,24 @@ class Editor : JFrame() {
         }
         toolBar.add(argsItem)
 
+        val flagItem = createToolBarItem("Flag: $flag", 'l')
+        flagItem.addActionListener {
+            if (flag == 'f') {
+                flag = 'd'
+            } else if (flag == 'd') {
+                flag = 'f'
+            }
+            flagItem.text = "Flag: $flag"
+        }
+        toolBar.add(flagItem)
+
         val refreshItem = createToolBarItem("Refresh", 'f')
         refreshItem.addActionListener { highlightText() }
         toolBar.add(refreshItem)
 
         val settingsItem = createToolBarItem("Settings", 'e')
         settingsItem.addActionListener {
-            Runtime.getRuntime().exec(arrayOf("Notepad", "programs/settings.txt"))
+            Runtime.getRuntime().exec(arrayOf("Notepad", "config/settings.txt"))
         }
         toolBar.add(settingsItem)
     }

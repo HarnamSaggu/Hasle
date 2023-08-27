@@ -1,7 +1,7 @@
 GENERAL
 [x] allow for multiple files, specifying a main file
 [x] change main stack level to [0, 0] so global variables can be accessed like normal from [0]
-[ ] make all variable nonsense like while statement stacks be handled in HeapManager
+[?] make all variable nonsense like while statement stacks be handled in HeapManager
 [ ] add index info to tokens to help error messages
 [ ] if else cases???
 [x] add method to replace syntactic sugar with long form and then parse as both are being done at once
@@ -15,3 +15,9 @@ STRUCTS
 [x] property label token
 [x] fuck load of other stuff...
 [x] property assignment
+
+===========
+
+[ ] add 'has' for structs
+[ ] add flag setter for editor
+[ ] setup application build system
