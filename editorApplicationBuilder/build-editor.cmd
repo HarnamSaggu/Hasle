@@ -5,7 +5,7 @@
 set consoleJar=C:\Users\theto\IdeaProjects\Hasle\consoleJar\Hasle.jar
 set editorJar=C:\Users\theto\IdeaProjects\Hasle\editorJar\Hasle.jar
 set builderRoot=C:\Users\theto\IdeaProjects\Hasle\editorApplicationBuilder\
-set settings=%builderRoot%settings-template.txt
+set settings=%builderRoot%settings.txt
 set icon=%builderRoot%hasle.ico
 set png=%builderRoot%hasle.png
 set runBat=%builderRoot%run.bat
@@ -24,7 +24,6 @@ copy %editorJar%
 :: copies config files
 cd config
 copy %settings%
-ren settings-template.txt settings.txt
 copy %icon%
 copy %png%
 copy %runBat%
