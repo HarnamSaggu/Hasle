@@ -211,11 +211,11 @@ private fun parseItem(unsimplifiedTokens: List<Token>): Command {
 	}
 }
 
-private fun parseVariableReference(tokens: List<Token>): VariableReference {
+private fun parseVariableReference(tokens: List<Token>): Reference {
 	val name = tokens.first().value
 
 	var index = 1
-	val accessors = mutableListOf<Access>()
+	val accessors = mutableListOf<Accessor>()
 	while (index < tokens.size && tokens[index].type != ASSIGN) {
 		val token = tokens[index]
 
@@ -236,7 +236,7 @@ private fun parseVariableReference(tokens: List<Token>): VariableReference {
 		index++
 	}
 
-	return VariableReference(name, accessors.toList())
+	return Reference(name, accessors.toList())
 }
 
 private fun parseAssignment(tokens: List<Token>): Assignment {
@@ -281,7 +281,7 @@ private fun parseExpression(unsimplifiedTokens: List<Token>): Command {
 				if (first.type == OPEN_C) {
 					if (tokens.last().type == CLOSE_C) {
 						val elements = collectArguments(tokens, 1).first
-						return DefinedArray(
+						return DefinedList(
 							if (elements.isEmpty()) {
 								listOf()
 							} else {
@@ -293,7 +293,7 @@ private fun parseExpression(unsimplifiedTokens: List<Token>): Command {
 
 						val index = parseExpression(indexTokens)
 
-						return SizedArray(index)
+						return SizedList(index)
 					}
 				} else if (first.type == OPEN && tokens.last().type == CLOSE) {
 					return parseExpression(tokens.drop(1).dropLast(1))

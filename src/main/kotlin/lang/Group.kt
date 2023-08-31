@@ -60,7 +60,6 @@ fun Type.getNameOfMethod(): String =
         DIVIDE -> "div"
         MOD -> "mod"
         POWER -> "pow"
-        AT -> "at"
         EQUALS -> "equals"
         NOT_EQUALS -> "notEquals"
         GREATER -> "greater"

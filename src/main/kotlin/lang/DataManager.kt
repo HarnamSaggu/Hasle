@@ -9,7 +9,7 @@ class DataManager {
 		addMethodLevel()
 	}
 
-	fun getVariable(variableName: String, accessors: List<Access>, stackLevel: Pair<Int, Int>): Data {
+	fun getVariable(variableName: String, accessors: List<Accessor>, stackLevel: Pair<Int, Int>): Data {
 		val firstLevel = lowestLevel(variableName, stackLevel)
 		var value = heap[firstLevel]?.get(variableName)
 			?: throw Error("Cannot locate variable: $variableName $accessors")
@@ -35,6 +35,10 @@ class DataManager {
 						value = IntData(value.value.size)
 					}
 
+					value is StructData && property == "fields" -> {
+						value = ListData(value.value.keys.map(::wrap).toMutableList())
+					}
+
 					else -> {
 						value = (value as StructData).getProperty(accessor.property)
 					}
@@ -44,7 +48,7 @@ class DataManager {
 		return value
 	}
 
-	fun setVariable(variableName: String, accessors: List<Access>, value: Data, stackLevel: Pair<Int, Int>) {
+	fun setVariable(variableName: String, accessors: List<Accessor>, value: Data, stackLevel: Pair<Int, Int>) {
 		val firstLevel = lowestLevel(variableName, stackLevel)
 		if (accessors.isNotEmpty()) {
 			var variable = heap[firstLevel]?.get(variableName)

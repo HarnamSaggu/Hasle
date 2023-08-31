@@ -2,11 +2,7 @@ package lang
 
 import java.math.BigInteger
 
-abstract class Command {
-	override fun toString(): String {
-		return "(UNIDENTIFIED)"
-	}
-}
+abstract class Command
 
 class MainMethod(val body: List<Command>) : Command() {
 	override fun toString(): String {
@@ -37,9 +33,9 @@ class StructDeclaration(
 	}
 }
 
-class VariableReference(
+class Reference(
 	val variableName: String,
-	val accessors: List<Access>
+	val accessors: List<Accessor>
 ) : Command() {
 	override fun toString(): String {
 		return "(variable).{$variableName}.{$accessors}"
@@ -47,7 +43,7 @@ class VariableReference(
 }
 
 class Assignment(
-	val reference: VariableReference,
+	val reference: Reference,
 	val value: Command,
 	val isGlobal: Boolean
 ) : Command() {
@@ -62,9 +58,14 @@ class MethodCall(val methodName: String, val arguments: List<Command>) : Command
 	}
 }
 
-class If(val booleanExpression: Command, val firstBody: List<Command>, val secondBody: List<Command>) : Command() {
+class If(
+	val booleanExpression: Command,
+	val firstBody: List<Command>,
+	val secondBody: List<Command>
+) : Command() {
 	override fun toString(): String {
-		return "(if).{$booleanExpression}.{\n${firstBody.joinToString("\n\t")}.{\n${secondBody.joinToString("\n\t")}"
+		return "(if).{$booleanExpression}.{\n${firstBody.joinToString("\n\t")}" +
+				".{\n${secondBody.joinToString("\n\t")}"
 	}
 }
 
@@ -80,21 +81,21 @@ class Value<T>(val value: T) : Command() {
 	}
 }
 
-class DefinedArray(val elements: List<Command>) : Command() {
+class DefinedList(val elements: List<Command>) : Command() {
 	override fun toString(): String {
 		return "(array).{$elements}"
 	}
 }
 
-class SizedArray(val size: Command) : Command() {
+class SizedList(val size: Command) : Command() {
 	override fun toString(): String {
 		return "(sized array).{$size}"
 	}
 }
 
-abstract class Access
+abstract class Accessor
 
-class Index(val index: Command) : Access() {
+class Index(val index: Command) : Accessor() {
 	var int = -1
 
 	override fun toString(): String {
@@ -102,7 +103,7 @@ class Index(val index: Command) : Access() {
 	}
 }
 
-class Property(val property: String) : Access() {
+class Property(val property: String) : Accessor() {
 	override fun toString(): String {
 		return "(property).{$property}"
 	}

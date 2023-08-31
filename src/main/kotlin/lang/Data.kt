@@ -13,9 +13,7 @@ fun wrap(value: Any): Data =
 		else -> throw Error("Cannot interpret value: (${value::class.java}) $value")
 	}
 
-abstract class Data(open val value: Any) {
-	open val type: String = "NaN"
-
+abstract class Data(open val type: String, open val value: Any) {
 	override fun equals(other: Any?): Boolean {
 		return other is Data && other.type == type && other.value == value
 	}
@@ -31,27 +29,17 @@ abstract class Data(open val value: Any) {
 	}
 }
 
-class IntData(override val value: BigInteger) : Data(value) {
+class IntData(override val value: BigInteger) : Data("int", value) {
 	constructor(int: Int) : this(int.toBigInteger())
-
-	override val type: String = "int"
 }
 
-class DecimalData(override val value: BigDecimal) : Data(value) {
-	override val type: String = "decimal"
-}
+class DecimalData(override val value: BigDecimal) : Data("decimal", value)
 
-class StringData(override val value: String) : Data(value) {
-	override val type: String = "string"
-}
+class StringData(override val value: String) : Data("string", value)
 
-class CharData(override val value: Char) : Data(value) {
-	override val type: String = "char"
-}
+class CharData(override val value: Char) : Data("char", value)
 
-class ListData(override val value: MutableList<Data>) : Data(value) {
-	override val type: String = "list"
-
+class ListData(override val value: MutableList<Data>) : Data("list", value) {
 	fun getIndex(index: Int): Data = value[index]
 
 	fun setIndex(index: Int, element: Data) {
@@ -59,10 +47,14 @@ class ListData(override val value: MutableList<Data>) : Data(value) {
 	}
 }
 
-class StructData(override val type: String, override val value: MutableMap<String, Data>) : Data(value) {
+class StructData(override val type: String, override val value: MutableMap<String, Data>) : Data(type, value) {
 	fun getProperty(property: String): Data = value[property] ?: throw Error("Unrecognised property: $property in $type")
 
 	fun setProperty(property: String, fieldValue: Data) {
 		value[property] = fieldValue
+	}
+
+	override fun toString(): String {
+		return "$type$value"
 	}
 }

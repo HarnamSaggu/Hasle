@@ -184,7 +184,7 @@ class Runner(
 
     private fun evaluateExpression(expression: Command, stackLevel: Pair<Int, Int>): Data {
         when (expression) {
-            is VariableReference -> {
+            is Reference -> {
                 val name = expression.variableName
 
                 val accessors = expression.accessors
@@ -200,11 +200,11 @@ class Runner(
                 return wrap(expression.value)
             }
 
-            is DefinedArray -> {
+            is DefinedList -> {
                 return ListData(expression.elements.map { evaluateExpression(it, stackLevel) }.toMutableList())
             }
 
-            is SizedArray -> {
+            is SizedList -> {
                 val size = (evaluateExpression(expression.size, stackLevel) as IntData).value.toInt()
                 return ListData(MutableList(size) { IntData(0) })
             }

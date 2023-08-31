@@ -30,6 +30,9 @@ class StandardLibrary(
 ) {
 
     val methods: Map<String, (List<Data>) -> Data> = mapOf(
+
+        // MATHS
+
         "add" to {
             if (it.size == 2) {
                 val a = it[0]
@@ -361,6 +364,8 @@ class StandardLibrary(
             }
         },
 
+        // CONVERSIONS
+
         "dec" to {
             DecimalData(
                 when {
@@ -420,10 +425,11 @@ class StandardLibrary(
             }
         },
 
+        // I/O
+
         "readln" to {
             StringData(input())
         },
-
 
         "print" to {
             output(it.joinToString(""))
@@ -434,6 +440,79 @@ class StandardLibrary(
             output(it.joinToString("") + "\n")
             zero
         },
+
+        "sleep" to {
+            if (it.size == 1 && it[0] is IntData) {
+                val a = it[0] as IntData
+                sleep(a.value.toLong())
+            }
+
+            zero
+        },
+
+        "readFile" to {
+            if (it.size == 1 && it[0] is StringData) {
+                val a = it[0] as StringData
+                StringData(File(a.value).readText())
+            } else {
+                zero
+            }
+        },
+
+        "writeFile" to {
+            if (it.size == 2 && it[0] is StringData && it[1] is StringData) {
+                val a = it[0] as StringData
+                val b = it[1] as StringData
+                File(a.value).writeText(b.value)
+            }
+
+            zero
+        },
+
+        "readBytes" to {
+            if (it.size == 1 && it[0] is StringData) {
+                val a = it[0] as StringData
+                ListData(File(a.value).readBytes().map { byte ->
+                    IntData(byte.toInt())
+                }.toMutableList())
+            } else {
+                zero
+            }
+        },
+
+        "writeFile" to {
+            if (it.size == 2 && it[0] is StringData && it[1] is ListData) {
+                val a = it[0] as StringData
+                val b = it[1] as ListData
+                File(a.value).writeBytes(
+                    b.value.map { byte ->
+                        (byte as IntData).value.toString().toByte()
+                    }.toByteArray()
+                )
+            }
+
+            zero
+        },
+
+        "exit" to {
+            if (it.size == 1 && it[0] is IntData) {
+                val a = it[0] as IntData
+                exit(a.value.toInt())
+            } else {
+                exit(0)
+            }
+            zero
+        },
+
+        "time" to {
+            IntData(System.currentTimeMillis().toBigInteger())
+        },
+
+        "dateTime" to {
+            StringData(LocalDateTime.now().toString())
+        },
+
+        // LOGIC
 
         "equals" to {
             (it.size == 2 && it[0] == it[1]).toIntData()
@@ -543,6 +622,8 @@ class StandardLibrary(
             }
         },
 
+        // STRING, LISTS
+
         "len" to {
             if (it.size == 1) {
                 IntData(
@@ -552,22 +633,6 @@ class StandardLibrary(
                         else -> 0
                     }
                 )
-            } else {
-                zero
-            }
-        },
-
-        "at" to {
-            if (it.size == 2) {
-                val a = it[0]
-                val b = it[1]
-                if (a is ListData && b is IntData) {
-                    a.value[b.value.toInt()]
-                } else if (a is StringData && b is IntData) {
-                    CharData(a.value[b.value.toInt()])
-                } else {
-                    zero
-                }
             } else {
                 zero
             }
@@ -699,83 +764,14 @@ class StandardLibrary(
             }
         },
 
+        // OBJECTS
+
         "class" to {
             if (it.size == 1) {
                 StringData(it[0].type)
             } else {
                 zero
             }
-        },
-
-        "sleep" to {
-            if (it.size == 1 && it[0] is IntData) {
-                val a = it[0] as IntData
-                sleep(a.value.toLong())
-            }
-
-            zero
-        },
-
-        "readFile" to {
-            if (it.size == 1 && it[0] is StringData) {
-                val a = it[0] as StringData
-                StringData(File(a.value).readText())
-            } else {
-                zero
-            }
-        },
-
-        "writeFile" to {
-            if (it.size == 2 && it[0] is StringData && it[1] is StringData) {
-                val a = it[0] as StringData
-                val b = it[1] as StringData
-                File(a.value).writeText(b.value)
-            }
-
-            zero
-        },
-
-        "readBytes" to {
-            if (it.size == 1 && it[0] is StringData) {
-                val a = it[0] as StringData
-                ListData(File(a.value).readBytes().map { byte ->
-                    IntData(byte.toInt())
-                }.toMutableList())
-            } else {
-                zero
-            }
-        },
-
-        "writeFile" to {
-            if (it.size == 2 && it[0] is StringData && it[1] is ListData) {
-                val a = it[0] as StringData
-                val b = it[1] as ListData
-                File(a.value).writeBytes(
-                    b.value.map { byte ->
-                        (byte as IntData).value.toString().toByte()
-                    }.toByteArray()
-                )
-            }
-
-            zero
-        },
-
-        "exit" to {
-            if (it.size == 1 && it[0] is IntData) {
-                val a = it[0] as IntData
-                exit(a.value.toInt())
-            } else {
-                exit(0)
-            }
-            zero
-        },
-
-        "time" to {
-            IntData(System.currentTimeMillis().toBigInteger())
-        },
-
-        "dateTime" to {
-            StringData(LocalDateTime.now().toString())
         },
 
         "copy" to {
@@ -790,6 +786,8 @@ class StandardLibrary(
 }
 
 fun Boolean.toIntData(): IntData = if (this) IntData(1) else IntData(0)
+
+fun BigInteger.toBoolean() = this > zero.value
 
 fun copy(x: Data): Data =
     when (x) {
@@ -806,5 +804,3 @@ fun copy(x: Data): Data =
 
         else -> throw Error("Cannot copy unexpected value: $x (${x::class.java}")
     }
-
-fun BigInteger.toBoolean() = this > zero.value

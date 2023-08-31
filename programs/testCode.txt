@@ -1,11 +1,15 @@
 main(args) {
-    seconds = int(readln())
-    println("hello world")
+    val = "hello"
+    var = subList(split(val, ""), 1, val.len + 1)
     i = 0
-    while (i < seconds) {
-        sleep(1000)
-        println("you've waited: ", i + 1, " seconds")
+    while (i < val.len) {
+        println(val[i], " ", var[i])
+        println(val[i].class, " ", var[i].class, " ", i.class, "\n")
         i++
     }
-    println("the end")
+}
+
+struct foo(bar, baz) {
+    bar = bar
+    baz = baz
 }
