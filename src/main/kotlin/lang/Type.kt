@@ -1,64 +1,57 @@
 package lang
 
-enum class Type {
-	NAME,               // variable name, method name etc.
-	MAIN,               // main
-	WHILE,              // while
-	IF,                 // if
-	ELSE,               // else
-	STRUCT,             // struct
+enum class Type(val symbol: String?) {
+	NAME(null),               // variable name, method name etc.
+	MAIN(null),               // main
+	WHILE(null),              // while
+	IF(null),                 // if
+	ELSE(null),               // else
+	STRUCT(null),             // struct
 
-	CHAR,               // 'a', 'b', 'c'
-	STRING,             // "hello world"
-	INTEGER,            // 3_141_592
-	DECIMAL,            // 3.141_592
-	TRUE,               // true
-	FALSE,              // false
+	CHAR(null),               // 'a', 'b', 'c'
+	STRING(null),             // "hello world"
+	INTEGER(null),            // 3_141_592
+	DECIMAL(null),            // 3.141_592
+	TRUE(null),               // true
+	FALSE(null),              // false
 
-	ASSIGN,             // =
-	RETURN,             // <-
-	GLOBAL,             // $
-	PLUS_ASSIGN,        // +-
-	MINUS_ASSIGN,       // -=
-	MULTIPLY_ASSIGN,    // *=
-	DIVIDE_ASSIGN,      // /=
-	MOD_ASSIGN,         // %=
-	POWER_ASSIGN,       // ^=
+	ASSIGN("="),             // =
+	RETURN("<-"),             // <-
+	GLOBAL("$"),             // $
 
-	PLUS,               // +
-	MINUS,              // -
-	MULTIPLY,           // *
-	DIVIDE,             // /
-	MOD,                // %
-	POWER,              // ^
-	INCREMENT,          // ++
-	DECREMENT,          // --
+	PLUS("+"),               // +
+	MINUS("-"),              // -
+	MULTIPLY("*"),           // *
+	DIVIDE("/"),             // /
+	MOD("%"),                // %
+	POWER("^"),              // ^
+	INCREMENT("++"),          // ++
+	DECREMENT("--"),          // --
 
-	EQUALS,             // ==
-	NOT_EQUALS,         // !=
-	GREATER,            // >
-	LESS,               // <
-	GREATER_EQUALS,     // >=
-	LESS_EQUALS,        // <=
-	AND,                // &
-	OR,                 // |
+	EQUALS("=="),             // ==
+	NOT_EQUALS("!="),         // !=
+	GREATER(">"),            // >
+	LESS("<"),               // <
+	GREATER_EQUALS(">="),     // >=
+	LESS_EQUALS("<="),        // <=
+	AND("&&"),                // &
+	OR("||"),                 // |
 
-	NOT,                // !
-	COPY,               // ~
+	NOT("!"),                // !
+	COPY("~"),               // ~
 
-	AT,                 // @
-	GET,                // .
+	GET("."),                // .
 
-	OPEN,               // (
-	CLOSE,              // )
-	OPEN_C,             // {
-	CLOSE_C,            // }
-	OPEN_S,             // [
-	CLOSE_S,            // ]
+	OPEN("("),               // (
+	CLOSE(")"),              // )
+	OPEN_C("{"),             // {
+	CLOSE_C("}"),            // }
+	OPEN_S("["),             // [
+	CLOSE_S("]"),            // ]
 
-	COMMA,              // ,
+	COMMA(","),              // ,
 
-	LINE_SEPARATOR,     // line break
+	LINE_SEPARATOR("\n"),     // line break
 
-	UNIDENTIFIED,       // anything not captured by types above
+	UNIDENTIFIED(null),       // anything not captured by types above
 }

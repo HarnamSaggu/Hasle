@@ -89,29 +89,26 @@ fun parse(tokens: List<Token>): Pair<MainMethod, List<MethodDeclaration>> {
 private val assign = listOf(Token(ASSIGN))
 private val open = listOf(Token(OPEN))
 private val close = listOf(Token(CLOSE))
-private val complexAssignments =
-	listOf(PLUS_ASSIGN, MINUS_ASSIGN, MULTIPLY_ASSIGN, DIVIDE_ASSIGN, MOD_ASSIGN, POWER_ASSIGN)
 
 private fun expandSyntacticSugar(tokens: List<Token>): List<Token> {
+
 	val types = tokens.map { it.type }
 	var indexOfComplexAssignment = -1
-	val containsComplexAssignment = types.mapIndexed { index, it ->
-		if (complexAssignments.contains(it)) {
-			indexOfComplexAssignment = index
-			1
-		} else {
-			0
+	Type.entries.filter { Token(it).isBinaryOperator() }.forEach {
+		val indexOfOperator = types.indexOf(it)
+		if (indexOfOperator != -1 && indexOfOperator + 1 < types.size && types[indexOfOperator + 1] == ASSIGN) {
+			indexOfComplexAssignment = indexOfOperator
 		}
-	}.sum() == 1
+	}
 
 	var simplifiedTokens = tokens
 
 	val first = tokens.first()
 	if (first.type == NAME) {
-		if (containsComplexAssignment) {
+		if (indexOfComplexAssignment != -1) {
 			val variableReferenceTokens = tokens.take(indexOfComplexAssignment)
-			val valueTokens = tokens.subList(indexOfComplexAssignment + 1, tokens.size)
-			val assignmentOperator = tokens[indexOfComplexAssignment].toOperation()
+			val valueTokens = tokens.subList(indexOfComplexAssignment + 2, tokens.size)
+			val assignmentOperator = tokens[indexOfComplexAssignment]
 
 			simplifiedTokens = variableReferenceTokens +
 					assign +
@@ -121,16 +118,17 @@ private fun expandSyntacticSugar(tokens: List<Token>): List<Token> {
 					valueTokens +
 					close
 		} else if (tokens.last().type == INCREMENT || tokens.last().type == DECREMENT) {
+			val operator = listOf(Token(if (tokens.last().type == INCREMENT) PLUS else MINUS))
 			simplifiedTokens = tokens.dropLast(1) +
 					assign +
 					tokens.dropLast(1) +
-					listOf(tokens.last().toOperation()) +
+					operator +
 					listOf(Token(INTEGER, "1"))
 		}
-	} else if (first.type == GLOBAL && containsComplexAssignment) {
+	} else if (first.type == GLOBAL && indexOfComplexAssignment != -1) {
 		val variableReferenceTokens = tokens.subList(1, indexOfComplexAssignment)
-		val valueTokens = tokens.subList(indexOfComplexAssignment + 1, tokens.size)
-		val assignmentOperator = tokens[indexOfComplexAssignment].toOperation()
+		val valueTokens = tokens.subList(indexOfComplexAssignment + 2, tokens.size)
+		val assignmentOperator = tokens[indexOfComplexAssignment]
 
 		simplifiedTokens = listOf(first) +
 				variableReferenceTokens +
@@ -583,7 +581,6 @@ private val binaryOperators = listOf(
 	MULTIPLY,
 	DIVIDE,
 	MOD,
-	AT,
 	POWER,
 	EQUALS,
 	NOT_EQUALS,
@@ -606,7 +603,6 @@ private fun Token.isBinaryOperator(): Boolean =
 
 private fun BinaryOperator.priority(): Int =
 	when (operator) {
-		AT -> 12
 		POWER -> 11
 		DIVIDE -> 10
 		MULTIPLY -> 9
@@ -629,19 +625,3 @@ private fun BinaryOperator.priority(): Int =
 
 private fun Token.isUnaryOperator(): Boolean =
 	unaryOperators.contains(type)
-
-private fun Token.toOperation() = Token(
-	when (type) {
-		PLUS_ASSIGN -> PLUS
-		MINUS_ASSIGN -> MINUS
-		MULTIPLY_ASSIGN -> MULTIPLY
-		DIVIDE_ASSIGN -> DIVIDE
-		MOD_ASSIGN -> MOD
-		POWER_ASSIGN -> POWER
-
-		INCREMENT -> PLUS
-		DECREMENT -> MINUS
-
-		else -> type
-	}
-)

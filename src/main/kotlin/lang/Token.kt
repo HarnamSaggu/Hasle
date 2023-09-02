@@ -33,12 +33,6 @@ fun reproduceSourceCode(tokens: List<Token>): String =
 			ASSIGN -> "="
 			RETURN -> "<-"
 			GLOBAL -> "$"
-			PLUS_ASSIGN -> "+="
-			MINUS_ASSIGN -> "-="
-			MULTIPLY_ASSIGN -> "*="
-			DIVIDE_ASSIGN -> "/="
-			MOD_ASSIGN -> "%="
-			POWER_ASSIGN -> "^="
 
 			PLUS -> "+"
 			MINUS -> "-"
@@ -61,7 +55,6 @@ fun reproduceSourceCode(tokens: List<Token>): String =
 			NOT -> "!"
 			COPY -> "~"
 
-			AT -> "@"
 			GET -> "."
 
 			OPEN -> "("

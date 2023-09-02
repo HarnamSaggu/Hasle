@@ -1,15 +1,4 @@
 main(args) {
-    val = "hello"
-    var = subList(split(val, ""), 1, val.len + 1)
-    i = 0
-    while (i < val.len) {
-        println(val[i], " ", var[i])
-        println(val[i].class, " ", var[i].class, " ", i.class, "\n")
-        i++
-    }
-}
-
-struct foo(bar, baz) {
-    bar = bar
-    baz = baz
+    num = int(readln())
+    println(bool(num[0]))
 }

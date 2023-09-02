@@ -18,6 +18,7 @@ STRUCTS
 
 ===========
 
-[ ] add 'has' for structs
-[ ] add flag setter for editor
-[ ] setup application build system
+[x] add 'has' for structs *** instead added ".fields"
+[x] add flag setter for editor
+[x] setup application build system
+[x] get rid of operatorAssigns
