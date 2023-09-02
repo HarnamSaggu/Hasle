@@ -4,4 +4,4 @@ copy /y C:\Users\theto\IdeaProjects\Hasle\editorJar\Hasle.jar C:\Users\theto\Des
 cls
 cd C:\Users\theto\Desktop\Hasle\
 java -jar Hasle.jar
-exit /b
+exit

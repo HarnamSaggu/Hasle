@@ -7,10 +7,10 @@ import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.io.File
 import javax.swing.*
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 import javax.swing.plaf.basic.BasicScrollBarUI
-import javax.swing.text.StyleConstants
-import javax.swing.text.StyleContext
-import javax.swing.text.StyledDocument
+import javax.swing.text.*
 import kotlin.system.exitProcess
 
 fun main() {
@@ -84,7 +84,7 @@ class Editor : JFrame() {
             }
 
             override fun keyPressed(e: KeyEvent?) {
-                /* unused */
+                /* Unused */
             }
 
             override fun keyReleased(e: KeyEvent?) {
@@ -105,7 +105,43 @@ class Editor : JFrame() {
         lineWrapWrapper.background = backgroundColor
         lineWrapWrapper.add(editorPane, BorderLayout.CENTER)
 
+        val lineCounter = JTextArea()
+        lineCounter.border = editorPane.border
+        lineCounter.font = editorFont
+        lineCounter.foreground = commentColor
+        lineCounter.background = backgroundColor
+        lineCounter.isEditable = false
+        lineCounter.isFocusable = false
+
+        var time = System.currentTimeMillis()
+        fun update() {
+            if (System.currentTimeMillis() - time >= autoSaveTimer) {
+                autoSaveFile.writeText(doc.getText(0, doc.length))
+                time = System.currentTimeMillis()
+            }
+
+            val length = doc.getText(0, doc.length).lines().size
+            val numberLength = length.toString().length
+            lineCounter.text = (1..length).joinToString("\n") {
+                it.toString().padStart(numberLength, ' ')
+            }
+        }
+        doc.addDocumentListener(object : DocumentListener {
+            override fun insertUpdate(e: DocumentEvent?) {
+                update()
+            }
+
+            override fun removeUpdate(e: DocumentEvent?) {
+                update()
+            }
+
+            override fun changedUpdate(e: DocumentEvent?) {
+                /* Unused */
+            }
+        })
+
         val editorScrollPane = createScrollPane(lineWrapWrapper)
+        editorScrollPane.setRowHeaderView(lineCounter)
         editorPanel.add(editorScrollPane, BorderLayout.CENTER)
 
         mainPanel.add(editorPanel, BorderLayout.CENTER)
@@ -124,7 +160,6 @@ class Editor : JFrame() {
 
         var prevText = ""
         var prevDot = 0
-        var time = System.currentTimeMillis()
         val highlighter = object : SwingWorker<Any?, Any?>() {
             override fun doInBackground(): Any? {
                 val run = true
@@ -133,12 +168,6 @@ class Editor : JFrame() {
                         highlightText()
                         prevText = doc.getText(0, doc.length)
                         prevDot = editorPane.caret.dot
-
-                        if (System.currentTimeMillis() - time >= autoSaveTimer) {
-                            autoSaveFile.writeText(doc.getText(0, doc.length))
-
-                            time = System.currentTimeMillis()
-                        }
                     }
                 }
                 return null
@@ -341,6 +370,12 @@ class Editor : JFrame() {
 
         val doc = textPane.styledDocument
         val def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE)
+
+        (doc as AbstractDocument).documentFilter = object : DocumentFilter() {
+            override fun replace(fb: FilterBypass?, offset: Int, length: Int, text: String, attrs: AttributeSet?) {
+                super.insertString(fb, offset, text.replace("\t", " ".repeat(tabSize)), attrs)
+            }
+        }
 
         val regular = doc.addStyle("regular", def)
         StyleConstants.setFontFamily(def, editorFont.family)
