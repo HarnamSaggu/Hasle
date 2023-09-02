@@ -782,6 +782,32 @@ class StandardLibrary(
             }
         },
 
+        "set" to {
+            if (it.size == 3) {
+                val a = it[0]
+                val b = it[1]
+                val c = it[2]
+                if (a is StructData && b is StringData) {
+                    a.value[b.value] = c
+                }
+            }
+            zero
+        },
+
+        "get" to {
+            if (it.size == 2) {
+                val a = it[0]
+                val b = it[1]
+                if (a is StructData && b is StringData) {
+                    a.value[b.value] ?: zero
+                } else {
+                    zero
+                }
+            } else {
+                zero
+            }
+        },
+
         )
 }
 
