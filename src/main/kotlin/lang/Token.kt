@@ -15,7 +15,7 @@ class Token(val type: Type, val value: String = "") {
 
 fun reproduceSourceCode(tokens: List<Token>): String =
 	tokens.joinToString("") {
-		when (it.type) {
+		it.type.symbol ?: when (it.type) {
 			NAME -> it.value
 			MAIN -> "main"
 			WHILE -> "while"
@@ -30,44 +30,6 @@ fun reproduceSourceCode(tokens: List<Token>): String =
 			TRUE -> "tue"
 			FALSE -> "false"
 
-			ASSIGN -> "="
-			RETURN -> "<-"
-			GLOBAL -> "$"
-
-			PLUS -> "+"
-			MINUS -> "-"
-			MULTIPLY -> "*"
-			DIVIDE -> "/"
-			MOD -> "%"
-			POWER -> "^"
-			INCREMENT -> "++"
-			DECREMENT -> "--"
-
-			EQUALS -> "=="
-			NOT_EQUALS -> "!="
-			GREATER -> ">"
-			LESS -> "<"
-			GREATER_EQUALS -> ">="
-			LESS_EQUALS -> "<="
-			AND -> "&"
-			OR -> "|"
-
-			NOT -> "!"
-			COPY -> "~"
-
-			GET -> "."
-
-			OPEN -> "("
-			CLOSE -> ")"
-			OPEN_C -> "{"
-			CLOSE_C -> "}"
-			OPEN_S -> "["
-			CLOSE_S -> "]"
-
-			COMMA -> ","
-
-			LINE_SEPARATOR -> "\n"
-
-			UNIDENTIFIED -> "???"
+			else -> "???"
 		}
 	}
