@@ -1,4 +1,13 @@
 main(args) {
-    num = int(readln())
-    println(bool(num[0]))
+    println("hello world".len())
+    println(arr()[2].bar[2].bar / arr()[1].bar)
+}
+
+arr() {
+    arr = {foo(1), foo(2), foo({3, 1, foo(4)})}
+    <- arr
+}
+
+struct foo(num) {
+    bar = num
 }

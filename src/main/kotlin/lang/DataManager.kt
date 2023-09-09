@@ -12,7 +12,7 @@ class DataManager {
 	fun getVariable(variableName: String, accessors: List<Accessor>, stackLevel: Pair<Int, Int>): Data {
 		val firstLevel = lowestLevel(variableName, stackLevel)
 		var value = heap[firstLevel]?.get(variableName)
-			?: throw Error("Cannot locate variable: $variableName $accessors")
+		            ?: throw Error("Cannot locate variable: $variableName $accessors")
 		for (accessor in accessors) {
 			if (accessor is Index) {
 				if (value is ListData) {
@@ -21,28 +21,7 @@ class DataManager {
 					value = CharData(value.value[accessor.int])
 				}
 			} else if (accessor is Property) {
-				val property = accessor.property
-				when {
-					property == "class" -> {
-						value =  StringData(value.type)
-					}
-
-					value is StringData && property == "len" -> {
-						value = IntData(value.value.length)
-					}
-
-					value is ListData && property == "len" -> {
-						value = IntData(value.value.size)
-					}
-
-					value is StructData && property == "fields" -> {
-						value = ListData(value.value.keys.map(::wrap).toMutableList())
-					}
-
-					else -> {
-						value = (value as StructData).getProperty(accessor.property)
-					}
-				}
+				value = (value as StructData).getProperty(accessor.property)
 			}
 		}
 		return value
@@ -52,7 +31,7 @@ class DataManager {
 		val firstLevel = lowestLevel(variableName, stackLevel)
 		if (accessors.isNotEmpty()) {
 			var variable = heap[firstLevel]?.get(variableName)
-				?: throw Error("Cannot locate variable: $variableName $accessors")
+			               ?: throw Error("Cannot locate variable: $variableName $accessors")
 			for (accessor in accessors.dropLast(1)) {
 				if (accessor is Index) {
 					variable = (variable as ListData).getIndex(accessor.int)

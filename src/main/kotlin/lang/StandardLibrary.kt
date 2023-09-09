@@ -808,6 +808,30 @@ class StandardLibrary(
             }
         },
 
+        "at" to {
+            if (it.size == 2) {
+                val a = it[0]
+                val b = it[1]
+                if (a is StringData && b is IntData) {
+                    CharData(a.value[b.value.toInt()])
+                } else if (a is ListData && b is IntData) {
+                    a.value[b.value.toInt()]
+                } else {
+                    zero
+                }
+            } else {
+                zero
+            }
+        },
+
+        "fields" to {
+            if (it.size == 1 && it[0] is StructData) {
+                ListData((it[0] as StructData).value.keys.map { x -> StringData(x) }.toMutableList())
+            } else {
+                zero
+            }
+        }
+
         )
 }
 
