@@ -7,8 +7,8 @@ class Token(val type: Type, val value: String = "") {
 		return "[$type]${
 			if (value.isNotBlank())
 				" {$value}"
-			else
-				if (type == STRING) " {}" else ""
+			else if (type == STRING) " {}"
+			else ""
 		}"
 	}
 }

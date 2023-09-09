@@ -96,7 +96,7 @@ class StandardLibrary(
             } else if (it.size == 3) {
                 val a = it[0]
                 val b = it[1]
-                val c = it[0]
+                val c = it[2]
                 if (a is DecimalData && b is DecimalData && c is IntData) {
                     DecimalData(a.value.divide(b.value, c.value.toInt(), RoundingMode.HALF_UP))
                 } else {
@@ -645,7 +645,7 @@ class StandardLibrary(
                 if (a is StringData && b is StringData) {
                     a.value.contains(b.value).toIntData()
                 } else if (a is ListData) {
-                    a.value.contains(b.value).toIntData()
+                    a.value.contains(b).toIntData()
                 } else {
                     zero
                 }

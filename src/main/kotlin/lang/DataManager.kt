@@ -66,7 +66,11 @@ class DataManager {
 				list.setIndex(last.int, value)
 			} else if (last is Property) {
 				val struct = variable as StructData
-				struct.setProperty(last.property, value)
+				if (last.property == "class" || last.property == "fields") {
+					throw Error("Cannot modify ${last.property} of $struct (reference: $variableName $accessors)")
+				} else {
+					struct.setProperty(last.property, value)
+				}
 			}
 		} else {
 			heap[firstLevel]?.let {
