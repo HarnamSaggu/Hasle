@@ -1,135 +1,125 @@
 main(args) {
-	x = 20
-	y = 15
-	if (len(args) == 2) {
-		x = int(args[0])
-		y = int(args[1])
-	}
-	board = array2d(x, y)
-
-	# GLIDER
-	# glider = {{0, 0, 1}, {1, 0, 1}, {0, 1, 1}}
-	# superpose(board, glider, 1, 1)
-
-	# RANDOM
-	i = 0
-	while (i < y) {
-		j = 0
-		while (j < x) {
-			board[i][j] = rand() > 0.8
-			j++
-		}
-		i++
-	}
-
-	# FUN PATTERN board[i][j] = i == 0 || i == y - 1 || j == 0 || j == x - 1
-
-	continue = 1
-	while (continue) {
-		print2d(board)
-		println()
-
-		next = next(board)
-		continue = next != board
-		board = next
-
-		sleep(400)
-	}
+    x = 38
+    y = 25
+    board = arr2d(x, y)
+    
+    # GLIDER ===================================
+    glider = {{0, 0, 1}, {1, 0, 1}, {0, 1, 1}}
+    transpose(board, glider, 1, 1)
+    
+    # RANDOM ===========================
+    # i = 0
+    # while (i < y) {
+    #     j = 0
+    #     while (j < x) {
+    #         board[i][j] = rand() > 0.8
+    #         j++
+    #     }
+    #     i++
+    # }
+    
+    continue = 1
+    while (continue) {
+        print2d(board)
+        next = ~board.next()
+        continue = next != board
+        board = next
+        
+        sleep(800)
+    }
 }
 
-next(board) {
-	y = len(board)
-	x = len(board[0])
-	next = array2d(x, y)
-
-	i = 0
-	while (i < y) {
-		j = 0
-		while (j < x) {
-			neighbours = 0
-			offX = -1
-			while (offX <= 1) {
-				offY = -1
-				while (offY <= 1) {
-					if (!(offX == 0 && offY == 0) && i + offY >= 0 && i + offY < y && j + offX >= 0 && j + offX < x) {
-						neighbours += board[i + offY][j + offX]
-					}
-
-					offY++
-				}
-				offX++
-			}
-
-			next[i][j] = neighbours == 3 || (board[i][j] && neighbours == 2)
-
-			j++
-		}
-		i++
-	}
-	<- next
+fun transpose(base, img, offX, offY) {
+    i = 0
+    while (i < img.len()) {
+        if (i + offY < base.len()) {
+            j = 0
+            while (j < img[i].len()) {
+                if (j + offX < base[i + offX].len()) {
+                    base[i + offY][j + offX] = img[i][j]
+                }
+                j++
+            }
+        }
+        i++
+    }
+    <- base
 }
 
-array2d(y, x) {
-	arr = {}[x]
-	i = 0
-	while (i < x) {
-		arr[i] = {}[y]
-		i++
-	}
-	<- arr
+fun next(board) {
+    y = board.len()
+    x = board[0].len()
+    next = arr2d(x, y)
+    i = 0
+    while (i < y) {
+        j = 0
+        while (j < x) {
+            n = 0
+            
+            offX = -1
+            while (offX <= 1) {
+                offY = -1
+                while (offY <= 1) {
+                    if (!(offX == 0 && offY == 0)) {
+                        newY = i + offY
+                        newX = j + offX
+                        if (newY >= 0 && newY < y && newX >= 0 && newX < x) {
+                            n += board[newY][newX]
+                        }
+                    }
+                    
+                    offY++
+                }
+                offX++
+            }
+            
+            next[i][j] = n == 3 || (board[i][j] && n == 2)
+            
+            j++
+        }
+        i++
+    }
+    <- next
 }
 
-superpose(base, img, x, y) {
-	i = 0
-	while (i < len(img)) {
-		j = 0
-		while (j < len(img[i])) {
-			if (i + y < len(base)) {
-				if (j + x < len(base[i + y])) {
-					base[i + y][j + x] = img[i][j]
-				}
-			}
-
-			j++
-		}
-		i++
-	}
+fun arr2d(x, y) {
+    arr = {}[y]
+    i = 0
+    while (i < y) {
+        arr[i] = {}[x]
+        i++
+    }
+    <- arr
 }
 
-print2d(arr) {
-	println(" +", repeat("-", 3 * len(arr[0]) + 2), "+")
-
-	i = 0
-	while (i < len(arr)) {
-		print(" | ")
-
-		j = 0
-		while (j < len(arr[i])) {
-			# print(" ", arr[i][j], " ")
-
-			if (arr[i][j]) {
-				# print("███")
-				print(" # ")
-			} else {
-				print("   ")
-			}
-
-			j++
-		}
-		println(" |")
-
-		i++
-	}
-
-	println(" +", repeat("-", 3 * len(arr[0]) + 2), "+")
+fun print2d(arr) {
+    y = arr.len()
+    x = arr[0].len()
+    i = 0
+    println("+", "---".rep(x), "+")
+    while (i < y) {
+        j = 0
+        print("|")
+        while (j < x) {
+            if (arr[i][j]) {
+                print("███")
+            } else {
+                print("   ")
+            }
+            j++
+        }
+        println("|")
+        i++
+    }
+    println("+", "---".rep(x), "+")
 }
 
-repeat(str, x) {
-	ret = ""
-	i = 0
-	while (i < x) {
-		ret += str
-		i++
-	}
-	<- ret
+fun rep(x, count) {
+    str = ""
+    i = 0
+    while (i < count) {
+        str += x
+        i++
+    }
+    <- str
 }

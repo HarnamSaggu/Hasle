@@ -1,53 +1,67 @@
-# FRACTRAN
+# FRACTRAN ===============
 # args: a0 a1 a2 ... an
-# a0 is starting value (input)
+# a0 is starting value
 # a1 ... an is the program
+# ========================
+
+# n * m
+# startingValue = 2^n * 3^m
+# program = 455/33 11/13 1/11 3/7 11/2 1/3
+# answer = 5^(n * m)
 
 main(args) {
-	startingValue = int(args[0])
-	program = interpret(subList(args, 1, len(args)))
-
-	accumulator = startingValue
-	print(accumulator, ", ")
-
-	continue = 1
-	while (continue) {
-		next = -1
-		i = 0
-		while (i < len(program) && next == -1) {
-			fraction = program[i]
-			if (makesInt(fraction, accumulator)) {
-				next = fraction.num * accumulator / fraction.den
-			}
-
-			i++
-		}
-		accumulator = next
-
-		if (accumulator == -1) {
-			continue = 0
-		} else {
-			print(accumulator, ", ")
-		}
-	}
+    accumulator = 1
+    program = {}
+    if (args.len() > 0) {
+        accumulator = int(args[0])
+        program = interpret(args.subList(1, args.len()))
+    } else {
+        println("starting value:")
+        accumulator = int(readln())
+        println("program:")
+        program = interpret(readln().split(" "))
+    }
+    
+    print(accumulator, ", ")
+    
+    continue = 1
+    while (continue) {
+        next = -1
+        i = 0
+        while (i < program.len() && next == -1) {
+            fraction = program[i]
+            if (makesInt(fraction, accumulator)) {
+                next = fraction.num * accumulator / fraction.den
+            }
+            
+            i++
+        }
+        accumulator = next
+        
+        if (accumulator == -1) {
+            continue = 0
+        } else {
+            print(accumulator, ", ")
+        }
+    }
 }
 
-interpret(strings) {
-	fractions = {}[len(strings)]
-	i = 0
-	while (i < len(strings)) {
-		operands = split(strings[i], "/")
-		fractions[i] = fraction(int(operands[0]), int(operands[1]))
-		i++
-	}
-	<- fractions
+fun interpret(strings) {
+    fractions = {}[strings.len()]
+    i = 0
+    while (i < strings.len()) {
+        operands = strings[i].split("/")
+        fractions[i] =  fraction(int(operands[0]), int(operands[1]))
+        i++
+    }
+    <- fractions
+}
+
+fun makesInt(frac, op) {
+    <- frac.num * op % frac.den == 0
 }
 
 struct fraction(a, b) {
-	num = a
-	den = b
-}
-
-makesInt(frac, op) {
-	<- frac.num * op % frac.den == 0
+    num = a
+    den = b
 }
