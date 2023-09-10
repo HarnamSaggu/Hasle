@@ -49,7 +49,7 @@ fun run(sourceCode: String, args: List<String>) {
 	val tokens = lex(sourceCode)
 	val (mainMethod, methods) = parse(tokens)
 
-	debug(tokens, mainMethod, methods)
+//	debug(tokens, mainMethod, methods)
 
 	Runner(mainMethod, methods, args)
 }

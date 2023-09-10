@@ -178,16 +178,13 @@ private fun parseItem(unsimplifiedTokens: List<Token>): Command {
 
 		NAME -> when {
 			tokens.size > 2 -> {
-				when (tokens[1].type) {
-					ASSIGN, GET, OPEN_S -> {
+				when {
+					tokens.contains(Token(ASSIGN)) -> {
 						parseAssignment(tokens)
 					}
 
-					OPEN -> {
-						MethodCall(
-							first.value,
-							collectArguments(tokens, 2).first.map { parseExpression(it) }
-						)
+					tokens[1].type == OPEN || tokens.last().type == CLOSE -> {
+						parseExpression(tokens)
 					}
 
 					else -> throw Error(

@@ -9,7 +9,7 @@ args:""
 COLORS =================================================================================================================
 
 backgroundColor:        0x101010
-sliderColor:            0x141414
+sliderColor:            0x808080
 sliderButtonColor:      0x000000
 fontColor:              0xFFFFFF
 variableColor:          0x93B3F5
