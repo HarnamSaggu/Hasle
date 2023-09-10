@@ -22,3 +22,7 @@ STRUCTS
 [x] add flag setter for editor
 [x] setup application build system
 [x] get rid of operatorAssigns
+
+[x] add remove
+[x] add fun syntax highlighting
+[ ] fix BigDecimal truncation

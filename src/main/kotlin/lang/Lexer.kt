@@ -118,8 +118,12 @@ fun lex(sourceCode: String): List<Token> {
 				value = "-"
 			}
 			while (index < length && "${sourceCode[index]}".matches(Regex("[0-9._]"))) {
-				value += sourceCode[index]
-				index++
+				if (index + 1 < length && !sourceCode[index + 1].isLetter()) {
+					value += sourceCode[index]
+					index++
+				} else {
+					break
+				}
 			}
 			value = value.replace("_", "")
 			index--

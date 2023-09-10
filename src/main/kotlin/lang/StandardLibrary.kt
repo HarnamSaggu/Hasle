@@ -121,6 +121,7 @@ open class StandardLibrary(
         "uppercase" to ::uppercase,
         "lowercase" to ::lowercase,
         "addAll" to ::addAll,
+        "remove" to ::remove,
         "removeAt" to ::removeAt,
         "subList" to ::subList,
         "indexOf" to ::indexOf,
@@ -806,6 +807,17 @@ open class StandardLibrary(
             ListData((a.value + b.value).toMutableList())
         } else {
             throw ArgumentTypeError("addAll", args)
+        }
+    }
+
+    private fun remove(args: List<Data>): Data {
+        return if (args.size == 2 && args[0] is ListData) {
+            val a = (args[0] as ListData).value.toMutableList()
+            val b = args[1]
+            a.remove(b.value)
+            ListData(a)
+        } else {
+            throw ArgumentTypeError("remove", args)
         }
     }
 

@@ -543,7 +543,7 @@ class Editor : JFrame() {
 				index--
 
 				type = when (value) {
-					"main", "while", "if", "else", "struct" -> "keyword"
+					"main", "while", "if", "else", "struct", "fun" -> "keyword"
 					"true", "false" -> "number"
 					else -> if (index + 1 < length && sourceCode[index + 1] == '(') {
 						"regular"
