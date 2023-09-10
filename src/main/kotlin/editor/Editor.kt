@@ -23,7 +23,7 @@ class Editor : JFrame() {
 	private val doc: StyledDocument
 
 	private var backgroundColor = Color(0x101010)
-	private var sliderColor = Color(0x808080)
+	private var sliderColor = Color(0x303030)
 	private var sliderButtonColor = Color(0x000000)
 	private var fontColor = Color(0xFFFFFF)
 	private var variableColor = Color(0x93B3F5)
