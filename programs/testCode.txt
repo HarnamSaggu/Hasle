@@ -3,7 +3,7 @@ main(args) {
     println(arr()[2].bar[2].bar / arr()[1].bar)
 }
 
-arr() {
+fun arr() {
     arr = {foo(1), foo(2), foo({3, 1, foo(4)})}
     <- arr
 }

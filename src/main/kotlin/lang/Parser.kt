@@ -23,10 +23,9 @@ fun parse(tokens: List<Token>): Pair<MainMethod, List<MethodDeclaration>> {
 					parseItem(it)
 				}
 			)
-		} else if (token.type == NAME || token.type == STRUCT) {
-			val isMethodDeclaration = token.type == NAME
-			val name = if (isMethodDeclaration) token.value else tokens[index + 1].value
-			index += if (isMethodDeclaration) 2 else 3
+		} else if (token.type == FUN || token.type == STRUCT) {
+			val name = tokens[index + 1].value
+			index += 3
 
 			val parameterNames = mutableListOf<String>()
 			while (index < tokens.size && tokens[index].type != CLOSE) {
@@ -43,7 +42,7 @@ fun parse(tokens: List<Token>): Pair<MainMethod, List<MethodDeclaration>> {
 			}
 			val items = itemiseTokens(section).toMutableList()
 
-			if (isMethodDeclaration) {
+			if (token.type == FUN) {
 				val returnStatement: Command = if (
 					items.isNotEmpty() &&
 					items.last().isNotEmpty() &&

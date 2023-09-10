@@ -7,6 +7,7 @@ enum class Type(val symbol: String?) {
 	IF(null),	// if
 	ELSE(null),	// else
 	STRUCT(null),	// struct
+	FUN(null),  // fun
 
 	CHAR(null),	// 'a', 'b', 'c'
 	STRING(null),	// "hello world"

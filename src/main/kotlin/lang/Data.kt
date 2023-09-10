@@ -48,7 +48,8 @@ class ListData(override val value: MutableList<Data>) : Data("list", value) {
 }
 
 class StructData(override val type: String, override val value: MutableMap<String, Data>) : Data(type, value) {
-	fun getProperty(property: String): Data = value[property] ?: throw Error("Unrecognised property: $property in $type")
+	fun getProperty(property: String): Data =
+		value[property] ?: throw Error("Unrecognised property: $property in $type")
 
 	fun setProperty(property: String, fieldValue: Data) {
 		value[property] = fieldValue

@@ -21,7 +21,8 @@ fun reproduceSourceCode(tokens: List<Token>): String =
 			WHILE -> "while"
 			IF -> "if"
 			ELSE -> "else"
-			STRUCT -> "struct"
+			STRUCT -> "struct "
+			FUN -> "fun "
 
 			STRING -> "\"${it.value}\""
 			CHAR -> "'${it.value}'"

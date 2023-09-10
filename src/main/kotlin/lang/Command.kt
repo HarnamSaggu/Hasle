@@ -27,9 +27,11 @@ class StructDeclaration(
 	val fields: Map<String, Command>
 ) : MethodDeclaration(structName, parameters, listOf(), Value(BigInteger("0"))) {
 	override fun toString(): String {
-		return "(struct).{$structName}.{$parameters}.{\n${fields.keys.joinToString("\n") {
-			"\t$it=\t${fields[it]}"
-		}}\n}"
+		return "(struct).{$structName}.{$parameters}.{\n${
+			fields.keys.joinToString("\n") {
+				"\t$it=\t${fields[it]}"
+			}
+		}\n}"
 	}
 }
 
@@ -65,7 +67,7 @@ class If(
 ) : Command() {
 	override fun toString(): String {
 		return "(if).{$booleanExpression}.{\n${firstBody.joinToString("\n\t")}" +
-				".{\n${secondBody.joinToString("\n\t")}"
+		       ".{\n${secondBody.joinToString("\n\t")}"
 	}
 }
 
