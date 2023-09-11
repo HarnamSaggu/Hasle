@@ -64,7 +64,7 @@ fun parse(tokens: List<Token>): Pair<MainMethod, List<MethodDeclaration>> {
 			} else {
 				val fields = mutableMapOf<String, Command>()
 				items.forEach {
-					fields[it.first().value] = parseExpression(it.drop(2))
+					fields[it.first().value] = parseExpression(if (it.size == 1) it else it.drop(2))
 				}
 
 				methodDeclarations.add(

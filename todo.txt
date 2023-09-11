@@ -25,4 +25,4 @@ STRUCTS
 
 [x] add remove
 [x] add fun syntax highlighting
-[ ] fix BigDecimal truncation
+[-] fix BigDecimal truncation
