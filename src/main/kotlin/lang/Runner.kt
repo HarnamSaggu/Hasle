@@ -1,7 +1,6 @@
 package lang
 
 import java.io.File
-import java.math.BigInteger
 import kotlin.system.exitProcess
 
 fun run(mainFile: File, args: List<String>) {
@@ -104,18 +103,18 @@ class Runner(
 					val booleanExpression = (evaluateExpression(command.booleanExpression, stackLevel) as IntData).value
 					val newLevel = dataManager.nextStack(stackLevel)
 
-					if (booleanExpression > BigInteger("0")) {
-						runSection(command.firstBody, newLevel)
+					runSection(if (booleanExpression > 0.toBigInteger()) {
+						command.firstBody
 					} else {
-						runSection(command.secondBody, newLevel)
-					}
+						command.secondBody
+					}, newLevel)
 
 					dataManager.popStack(newLevel)
 				}
 
 				is While -> {
 					var booleanExpression = (evaluateExpression(command.booleanExpression, stackLevel) as IntData).value
-					while (booleanExpression > BigInteger("0")) {
+					while (booleanExpression > 0.toBigInteger()) {
 						val newLevel = dataManager.nextStack(stackLevel)
 
 						runSection(command.body, newLevel)

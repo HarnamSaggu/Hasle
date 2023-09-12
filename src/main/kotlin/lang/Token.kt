@@ -52,3 +52,31 @@ fun reproduceSourceCode(tokens: List<Token>): String =
 			else -> "???"
 		}
 	}
+
+private val openBrackets = listOf(OPEN, OPEN_C, OPEN_S)
+private val closeBrackets = listOf(CLOSE, CLOSE_C, CLOSE_S)
+private val binaryOperators = listOf(
+	PLUS,
+	MINUS,
+	MULTIPLY,
+	DIVIDE,
+	MOD,
+	POWER,
+	EQUALS,
+	NOT_EQUALS,
+	GREATER,
+	LESS,
+	GREATER_EQUALS,
+	LESS_EQUALS,
+	AND,
+	OR
+)
+
+fun Token.isOpenBracket(): Boolean =
+	openBrackets.contains(type)
+
+fun Token.isCloseBracket(): Boolean =
+	closeBrackets.contains(type)
+
+fun Token.isBinaryOperator(): Boolean =
+	binaryOperators.contains(type)

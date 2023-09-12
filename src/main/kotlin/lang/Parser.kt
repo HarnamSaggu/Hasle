@@ -149,7 +149,6 @@ private fun parseItem(unsimplifiedTokens: List<Token>): Command {
 private val assign = listOf(Token(ASSIGN))
 private val open = listOf(Token(OPEN))
 private val close = listOf(Token(CLOSE))
-
 private fun expandSyntacticSugar(tokens: List<Token>): List<Token> {
 	val types = tokens.map { it.type }
 	var indexOfComplexAssignment = -1
@@ -388,20 +387,8 @@ private fun itemiseExpressionTokens(tokens: List<Token>): Pair<List<Token>, List
 	return head.toList() to tails.toList()
 }
 
-private fun simplifyOperators(tokens: List<Token>): List<Token> {
-	val groups = expressionToGroups(tokens)
-	val groupsUnary = replaceUnaryOperators(groups)
-	val groupsUnaryBinary = replaceBinaryOperator(groupsUnary)
-
-	return if (groupsUnaryBinary.isEmpty()) {
-		listOf()
-	} else {
-		groupsUnaryBinary[0].unravel()
-	}
-}
-
-private fun expressionToGroups(tokens: List<Token>): List<Group> {
-	val groups = mutableListOf<Group>()
+private fun itemiseTokens(tokens: List<Token>): List<List<Token>> {
+	val items = mutableListOf<List<Token>>()
 
 	var index = 0
 	val accumulator = mutableListOf<Token>()
@@ -409,118 +396,58 @@ private fun expressionToGroups(tokens: List<Token>): List<Group> {
 		val token = tokens[index]
 
 		when {
-			token.isUnaryOperator() -> {
-				if (accumulator.isNotEmpty()) {
-					groups.add(Bundle(accumulator.toList()))
-					accumulator.clear()
-				}
-				groups.add(UnaryOperator(token.type))
-			}
-
-			token.isBinaryOperator() -> {
-				groups.add(Bundle(accumulator.toList()))
-				accumulator.clear()
-				groups.add(BinaryOperator(token.type))
-			}
-
-			token.isOpenBracket() -> {
+			accumulator.isEmpty() && (token.type == IF || token.type == WHILE) -> {
 				accumulator.add(token)
-
 				index++
-				var count = 1
-				while (index < tokens.size && count != 0) {
-					val currentToken = tokens[index]
+				accumulator.add(tokens[index])
+				val booleanTokens = with(collectSection(tokens, index + 1, OPEN)) {
+					index = second
+					first
+				}
+				accumulator.addAll(booleanTokens)
+				accumulator.add(tokens[index])
+				index++
+				accumulator.add(tokens[index])
+				val mainSection = with(collectSection(tokens, index + 1)) {
+					index = second
+					first
+				}
+				accumulator.addAll(mainSection)
+				accumulator.add(tokens[index])
 
-					if (currentToken.isOpenBracket()) {
-						count++
-					} else if (currentToken.isCloseBracket()) {
-						count--
-					}
+				if (
+					index + 1 < tokens.size &&
+					token.type == IF &&
+					tokens[index + 1].type == ELSE
+				) {
+					accumulator.add(tokens[index + 1])
+					accumulator.add(tokens[index + 2])
 
-					accumulator.add(currentToken)
-
-					if (count != 0) {
-						index++
-					}
+					accumulator.addAll(
+						with(collectSection(tokens, index + 3)) {
+							index = this.second
+							this.first
+						}
+					)
+					accumulator.add(tokens[index])
 				}
 			}
 
-			else -> {
+			accumulator.isNotEmpty() && token.type == LINE_SEPARATOR -> {
+				items.add(accumulator.toList())
+				accumulator.clear()
+			}
+
+			token.type != LINE_SEPARATOR -> {
 				accumulator.add(token)
 			}
 		}
 
 		index++
 	}
-	if (accumulator.isNotEmpty()) {
-		groups.add(Bundle(accumulator.toList()))
-	}
 
-	return groups
+	return items.toList()
 }
-
-private fun replaceUnaryOperators(groups: List<Group>): List<Group> {
-	val newGroups = mutableListOf<Group>()
-	val accumulator = mutableListOf<Group>()
-	for (group in groups) {
-		if (group is BinaryOperator) {
-			newGroups.add(reduceUnaryBlock(accumulator.reversed()))
-			newGroups.add(group)
-			accumulator.clear()
-		} else {
-			accumulator.add(group)
-		}
-	}
-	if (accumulator.isNotEmpty()) {
-		newGroups.add(reduceUnaryBlock(accumulator.reversed()))
-	}
-
-	return newGroups
-}
-
-fun reduceUnaryBlock(blocks: List<Group>): Group {
-	var finalOperation = blocks.first()
-	for (index in 1..<blocks.size) {
-		val nextOperation = blocks[index] as UnaryOperator
-		nextOperation.expression = finalOperation
-		finalOperation = nextOperation
-	}
-
-	return finalOperation
-}
-
-private fun replaceBinaryOperator(groups: List<Group>): List<Group> =
-	when {
-		groups.isEmpty() -> listOf()
-		groups.size == 1 -> groups
-
-		else -> {
-			var winner = 1
-			var winnerPriority = -1
-			var index = 1
-			while (index < groups.size) {
-				val group = groups[index]
-				if (group is BinaryOperator) {
-					if (group.priority() > winnerPriority) {
-						winner = index
-						winnerPriority = group.priority()
-					}
-				} else {
-					throw Error("Missing Binary operator: $groups")
-				}
-				index += 2
-			}
-
-			val operator = groups[winner] as BinaryOperator
-			operator.expression0 = groups[winner - 1]
-			operator.expression1 = groups[winner + 1]
-			replaceBinaryOperator(
-				groups.take(winner - 1) +
-				operator +
-				groups.subList(winner + 2, groups.size)
-			)
-		}
-	}
 
 private fun collectSection(
 	tokens: List<Token>,
@@ -593,119 +520,3 @@ private fun collectArguments(
 
 	throw Error("Missing bracket for argument list end: ${reproduceSourceCode(tokens)}")
 }
-
-private fun itemiseTokens(tokens: List<Token>): List<List<Token>> {
-	val items = mutableListOf<List<Token>>()
-
-	var index = 0
-	val accumulator = mutableListOf<Token>()
-	while (index < tokens.size) {
-		val token = tokens[index]
-
-		when {
-			accumulator.isEmpty() && (token.type == IF || token.type == WHILE) -> {
-				accumulator.add(token)
-				index++
-				accumulator.add(tokens[index])
-				val booleanTokens = with(collectSection(tokens, index + 1, OPEN)) {
-					index = second
-					first
-				}
-				accumulator.addAll(booleanTokens)
-				accumulator.add(tokens[index])
-				index++
-				accumulator.add(tokens[index])
-				val mainSection = with(collectSection(tokens, index + 1)) {
-					index = second
-					first
-				}
-				accumulator.addAll(mainSection)
-				accumulator.add(tokens[index])
-
-				if (
-					index + 1 < tokens.size &&
-					token.type == IF &&
-					tokens[index + 1].type == ELSE
-				) {
-					accumulator.add(tokens[index + 1])
-					accumulator.add(tokens[index + 2])
-
-					accumulator.addAll(
-						with(collectSection(tokens, index + 3)) {
-							index = this.second
-							this.first
-						}
-					)
-					accumulator.add(tokens[index])
-				}
-			}
-
-			accumulator.isNotEmpty() && token.type == LINE_SEPARATOR -> {
-				items.add(accumulator.toList())
-				accumulator.clear()
-			}
-
-			token.type != LINE_SEPARATOR -> {
-				accumulator.add(token)
-			}
-		}
-
-		index++
-	}
-
-	return items.toList()
-}
-
-private val openBrackets = listOf(OPEN, OPEN_C, OPEN_S)
-private val closeBrackets = listOf(CLOSE, CLOSE_C, CLOSE_S)
-private val unaryOperators = listOf(NOT, COPY)
-private val binaryOperators = listOf(
-	PLUS,
-	MINUS,
-	MULTIPLY,
-	DIVIDE,
-	MOD,
-	POWER,
-	EQUALS,
-	NOT_EQUALS,
-	GREATER,
-	LESS,
-	GREATER_EQUALS,
-	LESS_EQUALS,
-	AND,
-	OR
-)
-
-private fun Token.isOpenBracket(): Boolean =
-	openBrackets.contains(type)
-
-private fun Token.isCloseBracket(): Boolean =
-	closeBrackets.contains(type)
-
-private fun Token.isBinaryOperator(): Boolean =
-	binaryOperators.contains(type)
-
-private fun Token.isUnaryOperator(): Boolean =
-	unaryOperators.contains(type)
-
-private fun BinaryOperator.priority(): Int =
-	when (operator) {
-		POWER -> 11
-		DIVIDE -> 10
-		MULTIPLY -> 9
-		MINUS -> 8
-		PLUS -> 7
-		MOD -> 6
-
-		GREATER -> 3
-		LESS -> 3
-		GREATER_EQUALS -> 3
-		LESS_EQUALS -> 3
-		EQUALS -> 3
-		NOT_EQUALS -> 3
-
-		AND -> 2
-		OR -> 1
-
-		else -> -1
-	}
