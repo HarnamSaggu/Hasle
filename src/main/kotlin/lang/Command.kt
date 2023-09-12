@@ -25,7 +25,7 @@ class StructDeclaration(
 	val structName: String,
 	override val parameters: List<String>,
 	val fields: Map<String, Command>
-) : MethodDeclaration(structName, parameters, listOf(), Value(BigInteger("0"))) {
+) : MethodDeclaration(structName, parameters, listOf(), 0.toValue()) {
 	override fun toString(): String {
 		return "(struct).{$structName}.{$parameters}.{\n${
 			fields.keys.joinToString("\n") {
@@ -82,6 +82,8 @@ class Value<T>(val value: T) : Command() {
 		return "(value).{$value}"
 	}
 }
+
+fun Int.toValue(): Value<BigInteger> = Value(toBigInteger())
 
 class DefinedList(val elements: List<Command>) : Command() {
 	override fun toString(): String {

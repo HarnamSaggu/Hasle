@@ -78,7 +78,7 @@ class Runner(
 	private fun runSection(
 		commands: List<Command>,
 		stackLevel: Pair<Int, Int>,
-		returnExpression: Command = Value(BigInteger("0"))
+		returnExpression: Command = 0.toValue()
 	): Data {
 		for (command in commands) {
 			when (command) {

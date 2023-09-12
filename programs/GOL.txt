@@ -1,4 +1,4 @@
-main(args) {
+fun main(args) {
     x = 38
     y = 25
     board = arr2d(x, y)

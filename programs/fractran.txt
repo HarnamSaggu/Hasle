@@ -9,7 +9,7 @@
 # program = 455/33 11/13 1/11 3/7 11/2 1/3
 # answer = 5^(n * m)
 
-main(args) {
+fun main(args) {
     accumulator = 1
     program = {}
     if (args.len() > 0) {

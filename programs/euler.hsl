@@ -1,4 +1,4 @@
-main(args) {
+fun main(args) {
     #problem1(1000.0, 3.0, 5.0)
     #problem2(4_000_000)
     #problem3(600_851_475_143)

@@ -1,9 +1,26 @@
-main(args) {
-    a = 4.0.pow(16.0)
-    b = 4.pow(16)
-    println(a)
-    println(b, " ", dec(b))
-    println(int(a) - b)
-    println(a - dec(b))
-    println(a - dec(b) + dec(b))
+fun main(args) {
+    println(foo({-1}).nums)
+    a = foo({foo({1}), foo({2}), foo({3, 4})})
+    println(a.fooString())
+}
+
+fun fooString(foo) {
+    str = "("
+    i = 0
+    while (i < foo.nums.len()) {
+        if (foo.nums[i].class() == "foo") {
+            str += foo.nums[i].fooString()
+        } else {
+            str += string(foo.nums[i])
+            if (i + 1 < foo.nums.len()) {
+                str += " "
+            }
+        }
+        i++
+    }
+    <- str + ")"
+}
+
+struct foo(nums) {
+    nums
 }
