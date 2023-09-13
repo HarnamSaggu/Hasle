@@ -24,7 +24,7 @@ class DataManager {
 					value = CharData(value.value[accessor.int])
 				}
 			} else if (accessor is Property) {
-				value = (value as StructData).getProperty(accessor.property)
+				value = (value as ClassData).getProperty(accessor.property)
 			}
 		}
 		return value
@@ -39,7 +39,7 @@ class DataManager {
 				if (accessor is Index) {
 					variable = (variable as ListData).getIndex(accessor.int)
 				} else if (accessor is Property) {
-					variable = (variable as StructData).getProperty(accessor.property)
+					variable = (variable as ClassData).getProperty(accessor.property)
 				}
 			}
 			val last = accessors.last()
@@ -47,11 +47,11 @@ class DataManager {
 				val list = variable as ListData
 				list.setIndex(last.int, value)
 			} else if (last is Property) {
-				val struct = variable as StructData
+				val `class` = variable as ClassData
 				if (last.property == "class" || last.property == "fields") {
-					throw Error("Cannot modify ${last.property} of $struct (reference: $variableName $accessors)")
+					throw Error("Cannot modify ${last.property} of $`class` (reference: $variableName $accessors)")
 				} else {
-					struct.setProperty(last.property, value)
+					`class`.setProperty(last.property, value)
 				}
 			}
 		} else {
@@ -152,7 +152,7 @@ class ListData(override val value: MutableList<Data>) : Data("list", value) {
 	}
 }
 
-class StructData(override val type: String, override val value: MutableMap<String, Data>) : Data(type, value) {
+class ClassData(override val type: String, override val value: MutableMap<String, Data>) : Data(type, value) {
 	fun getProperty(property: String): Data =
 		value[property] ?: throw Error("Unrecognised property: $property in $type")
 

@@ -25,7 +25,7 @@ private fun debug(tokens: List<Token>, mainMethod: MainMethod, methods: List<Met
 	println("main\n[args]")
 	mainMethod.body.forEach { println("\t$it") }
 	println()
-	methods.filterNot { it is StructDeclaration }.forEach {
+	methods.filterNot { it is ClassDeclaration }.forEach {
 		println(it.methodName)
 		println(it.parameters)
 		it.body.forEach { x -> println("\t$x") }
@@ -33,8 +33,8 @@ private fun debug(tokens: List<Token>, mainMethod: MainMethod, methods: List<Met
 		println()
 	}
 	println()
-	methods.filterIsInstance<StructDeclaration>().forEach {
-		println(it.structName)
+	methods.filterIsInstance<ClassDeclaration>().forEach {
+		println(it.className)
 		println(it.parameters)
 		it.fields.forEach { (key, value) -> println("\t$key=\t$value") }
 		println()
@@ -146,9 +146,9 @@ class Runner(
 					dataManager.setVariable(parameter, listOf(), arguments[index], methodStackLevel)
 				}
 
-				val returnValue = if (methodDeclaration is StructDeclaration) {
-					StructData(
-						methodDeclaration.structName,
+				val returnValue = if (methodDeclaration is ClassDeclaration) {
+					ClassData(
+						methodDeclaration.className,
 						methodDeclaration.fields.mapValues { (_, value) ->
 							evaluateExpression(
 								value,

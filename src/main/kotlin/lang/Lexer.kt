@@ -52,7 +52,7 @@ fun lex(sourceCode: String): List<Token> {
 				"while" -> WHILE
 				"if" -> IF
 				"else" -> ELSE
-				"struct" -> STRUCT
+				"class" -> CLASS
 				"fun" -> FUN
 
 				"true" -> TRUE

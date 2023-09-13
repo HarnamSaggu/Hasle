@@ -21,13 +21,13 @@ open class MethodDeclaration(
 	}
 }
 
-class StructDeclaration(
-	val structName: String,
+class ClassDeclaration(
+	val className: String,
 	override val parameters: List<String>,
 	val fields: Map<String, Command>
-) : MethodDeclaration(structName, parameters, listOf(), 0.toValue()) {
+) : MethodDeclaration(className, parameters, listOf(), 0.toValue()) {
 	override fun toString(): String {
-		return "(struct).{$structName}.{$parameters}.{\n${
+		return "(class).{$className}.{$parameters}.{\n${
 			fields.keys.joinToString("\n") {
 				"\t$it=\t${fields[it]}"
 			}

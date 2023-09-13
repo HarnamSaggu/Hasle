@@ -39,7 +39,7 @@ fun reproduceSourceCode(tokens: List<Token>): String =
 			WHILE -> "while"
 			IF -> "if"
 			ELSE -> "else"
-			STRUCT -> "struct "
+			CLASS -> "class "
 			FUN -> "fun "
 
 			STRING -> "\"${it.value}\""

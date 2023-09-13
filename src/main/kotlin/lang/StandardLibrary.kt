@@ -873,7 +873,7 @@ open class StandardLibrary(
             val a = args[0]
             val b = args[1]
             val c = args[2]
-            if (a is StructData && b is StringData) {
+            if (a is ClassData && b is StringData) {
                 a.value[b.value] = c
             } else {
                 throw ArgumentTypeError("set", args)
@@ -886,7 +886,7 @@ open class StandardLibrary(
         return if (args.size == 2) {
             val a = args[0]
             val b = args[1]
-            if (a is StructData && b is StringData) {
+            if (a is ClassData && b is StringData) {
                 a.value[b.value] ?: zero
             } else {
                 throw ArgumentTypeError("get", args)
@@ -913,8 +913,8 @@ open class StandardLibrary(
     }
 
     private fun fields(args: List<Data>): Data {
-        return if (args.size == 1 && args[0] is StructData) {
-            ListData((args[0] as StructData).value.keys.map { x -> StringData(x) }.toMutableList())
+        return if (args.size == 1 && args[0] is ClassData) {
+            ListData((args[0] as ClassData).value.keys.map { x -> StringData(x) }.toMutableList())
         } else {
             throw ArgumentTypeError("fields", args)
         }
@@ -928,7 +928,7 @@ open class StandardLibrary(
             is CharData -> CharData(x.value)
 
             is ListData -> ListData(x.value.map { copy(it) }.toMutableList())
-            is StructData -> StructData(
+            is ClassData -> ClassData(
                 x.type,
                 x.value.mapValues { (_, value) -> copy(value) }.toMutableMap()
             )

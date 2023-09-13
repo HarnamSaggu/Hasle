@@ -1,0 +1,80 @@
+
+	Hasle flow
+
+	   ┌────────────────┐
+	   │lexical analysis├─────┐
+	   └────────────────┘     │
+	                          │
+	   ┌──────────────────────▼─────────────────────────┐
+	   │parsing                                         │
+	   ├────────────────────────────────────────────────┤
+	   │                                                │
+	   │  │ tokens split into methods and main method   │
+	   │  │                                             │
+	   │  │ itemisation                                 │
+	   │  │                                             │
+	   │  │ parsing of items                            │
+	   │  │                                             │
+	   │  │  │ expansion of syntactic sugar             │
+	   │  │  │                                          │
+	   │  │  │ analysis of item type                    │
+	   │  │  │                                          │
+	   │  │  │ parsing of expressions                   │
+	   │  │  │                                          │
+	   │  │  │  │ methodisation of operators            │
+	   │  │  │  │                                       │
+	   │  │  │  │ itemisation (of expression tokens)    │
+	   │  │  │  │                                       │
+	   │  │  │  │ methodisation of expression items     │
+	   │  │  │  │                                       │
+	   │  │  │  │ analysis of expression type           │
+	   │  │  │  │                                       │
+	   │  │  │  │ creation of expression command (tree) │
+	   │  │  │                                          │
+	   │  │  │ creation of item command (tree)          │
+	   │                                                │
+	   └────────────────────────────────────────────────┘
+
+		1.  Lexing
+				Lexing is the conversion of source code into lexical tokens
+				These tokens are symbols for groups of symbols
+				The type is determined not only by the string is captures but from the context
+
+		2.  Parsing
+				Most complex section, as there is no translation to a lower-level language
+
+				First the tokens are grouped into the 'main' method, and methods (and class definitions)
+				Each of those methods has the same parsing steps, the data provided about the method is seperated
+				This includes the method name, parameters, and optional return
+
+				Itemisation
+					The body of all methods is then split into 'items'
+					An item is almost always a line of code, the exceptions are 'if' and 'while' statements
+					They need to have their sections included in the item, instead of split over different items
+
+				Item parsing
+					Each item is then determined to be either an assignment, method call, return statement, if, or while
+					The item is broken up into sections which need to further parsed (expressions) and instruction data
+					The instruction data includes names, boolean conditions, and modifiers
+					The expressions all return a value, these are parsed separately
+					Once all sections are parsed the corresponding Command object is created and returned
+
+				Expression parsing
+					The types of expressions are:
+						*   variable references (including items and/or fields)
+						*   raw values (integers, decimal, strings, characters, lists, classes)
+							(lists can be defined by a size (filled with 0s) or by specific elements)
+						*   method calls (all methods return a value, if not specified or relevant it returns 0)
+					Ideally the expression is a tree of method calls, with leaves being references or raw values
+
+					Operators
+						However these method call trees are mixed with unary and binary operators ('!', '+', '&&', etc.)
+						Before determining the type of expression these operators need to be converted to method calls
+						The tokens are grouped into bundles (references, values, method calls) and operators
+						Then the unary operators are attached to their bundles
+						The binary operator with the highest priority is then attached to the groups before and after
+						That is repeated until no operators remain unattached
+						A group tree has now been constructed, the tree needs to be 'unravelled'
+						The top node is converted to a list of tokens, beginning with the method (operation) name
+						Expressions of that node are placed after with proper grammar embedded
+						As each expression is really a group this process is repeated until the tree is a list of tokens

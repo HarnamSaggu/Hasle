@@ -23,7 +23,7 @@ fun parse(tokens: List<Token>): Pair<MainMethod, List<MethodDeclaration>> {
 					parseItem(it)
 				}
 			)
-		} else if (token.type == FUN || token.type == STRUCT) {
+		} else if (token.type == FUN || token.type == CLASS) {
 			val name = tokens[index + 1].value
 			index += 3
 
@@ -68,7 +68,7 @@ fun parse(tokens: List<Token>): Pair<MainMethod, List<MethodDeclaration>> {
 				}
 
 				methodDeclarations.add(
-					StructDeclaration(
+					ClassDeclaration(
 						name,
 						parameterNames.toList(),
 						fields.toMap()
