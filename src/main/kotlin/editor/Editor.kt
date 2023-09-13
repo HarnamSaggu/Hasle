@@ -34,7 +34,7 @@ class Editor : JFrame() {
 	private var commentColor = Color(0x5E5E5E)
 	private var literalColor = Color(0x53914C)
 	private var numberColor = Color(0x1A6ABE)
-	private var caretColor = Color(0xFFF200)
+	private var editorCaretColor = Color(0xFFF200)
 
 	private var settingsFile = File("")
 	private var settingsMap = mapOf<String, String>()
@@ -105,25 +105,11 @@ class Editor : JFrame() {
 		lineWrapWrapper.background = backgroundColor
 		lineWrapWrapper.add(editorPane, BorderLayout.CENTER)
 
-		val lineCounter = JTextArea()
-		lineCounter.border = editorPane.border
-		lineCounter.font = editorFont
-		lineCounter.foreground = commentColor
-		lineCounter.background = backgroundColor
-		lineCounter.isEditable = false
-		lineCounter.isFocusable = false
-
 		var time = System.currentTimeMillis()
 		fun update() {
 			if (System.currentTimeMillis() - time >= autoSaveTimer) {
 				autoSaveFile.writeText(doc.getText(0, doc.length))
 				time = System.currentTimeMillis()
-			}
-
-			val length = doc.getText(0, doc.length).lines().size
-			val numberLength = length.toString().length
-			lineCounter.text = (1..length).joinToString("\n") {
-				it.toString().padStart(numberLength, ' ')
 			}
 		}
 		doc.addDocumentListener(object : DocumentListener {
@@ -141,7 +127,6 @@ class Editor : JFrame() {
 		})
 
 		val editorScrollPane = createScrollPane(lineWrapWrapper)
-		editorScrollPane.setRowHeaderView(lineCounter)
 		editorPanel.add(editorScrollPane, BorderLayout.CENTER)
 
 		mainPanel.add(editorPanel, BorderLayout.CENTER)
@@ -232,7 +217,7 @@ class Editor : JFrame() {
 		commentColor = loadColor("commentColor") ?: commentColor
 		literalColor = loadColor("literalColor") ?: literalColor
 		numberColor = loadColor("numberColor") ?: numberColor
-		caretColor = loadColor("caretColor") ?: caretColor
+		editorCaretColor = loadColor("caretColor") ?: editorCaretColor
 	}
 
 	private fun loadColor(name: String): Color? {
@@ -370,10 +355,28 @@ class Editor : JFrame() {
 	}
 
 	private fun createTextPane(): JTextPane {
-		val textPane = JTextPane()
-		textPane.background = backgroundColor
-		textPane.border = BorderFactory.createEmptyBorder(10, 20, 10, 20)
-		textPane.caretColor = caretColor
+		val textPane = object : JTextPane() {
+			override fun getBackground(): Color = backgroundColor
+			override fun getCaretColor(): Color = editorCaretColor
+
+			override fun paintComponent(g: Graphics?) {
+				super.paintComponent(g)
+				val g2d = g as Graphics2D
+				g2d.font = editorFont
+				g2d.color = commentColor
+				val fm = g2d.fontMetrics
+				val lineCount = text.lines().size
+				val width = fm.stringWidth(lineCount.toString())
+				val lineHeight = fm.height
+				val maxAscent = fm.maxAscent
+				val baseLine = 20 + maxAscent
+				border = BorderFactory.createEmptyBorder(20, 20 + width, 20, 20)
+				repeat(lineCount) {
+					val n = (it + 1).toString()
+					g2d.drawString(n, 10 + width - fm.stringWidth(n), baseLine + lineHeight * it)
+				}
+			}
+		}
 
 		val doc = textPane.styledDocument
 		val def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE)
