@@ -1,20 +1,20 @@
 package lang
 
 enum class Type(val symbol: String?) {
-	NAME(null),	// variable name, method name etc.
-	MAIN(null),	// main
-	WHILE(null),	// while
-	IF(null),	// if
-	ELSE(null),	// else
-	CLASS(null),	// class
+	NAME(null),    // variable name, method name etc.
+	MAIN(null),    // main
+	WHILE(null),    // while
+	IF(null),    // if
+	ELSE(null),    // else
+	CLASS(null),    // class
 	FUN(null),  // fun
 
-	CHAR(null),	// 'a', 'b', 'c'
-	STRING(null),	// "hello world"
-	INTEGER(null),	// 3_141_592
-	DECIMAL(null),	// 3.141_592
-	TRUE(null),	// true
-	FALSE(null),	// false
+	CHAR(null),    // 'a', 'b', 'c'
+	STRING(null),    // "hello world"
+	INTEGER(null),    // 3_141_592
+	DECIMAL(null),    // 3.141_592
+	TRUE(null),    // true
+	FALSE(null),    // false
 
 	ASSIGN("="),
 	RETURN("<-"),
@@ -54,5 +54,5 @@ enum class Type(val symbol: String?) {
 
 	LINE_SEPARATOR("\n"),
 
-	UNIDENTIFIED(null),	// anything not captured by types above
+	UNIDENTIFIED(null),    // anything not captured by types above
 }

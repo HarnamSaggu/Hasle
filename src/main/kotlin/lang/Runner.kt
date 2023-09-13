@@ -103,11 +103,13 @@ class Runner(
 					val booleanExpression = (evaluateExpression(command.booleanExpression, stackLevel) as IntData).value
 					val newLevel = dataManager.nextStack(stackLevel)
 
-					runSection(if (booleanExpression > 0.toBigInteger()) {
-						command.firstBody
-					} else {
-						command.secondBody
-					}, newLevel)
+					runSection(
+						if (booleanExpression > 0.toBigInteger()) {
+							command.firstBody
+						} else {
+							command.secondBody
+						}, newLevel
+					)
 
 					dataManager.popStack(newLevel)
 				}
