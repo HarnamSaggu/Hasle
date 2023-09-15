@@ -154,7 +154,11 @@ private fun expandSyntacticSugar(tokens: List<Token>): List<Token> {
 	var indexOfComplexAssignment = -1
 	Type.entries.filter { Token(it).isBinaryOperator() }.forEach {
 		val indexOfOperator = types.indexOf(it)
-		if (indexOfOperator != -1 && indexOfOperator + 1 < types.size && types[indexOfOperator + 1] == ASSIGN) {
+		if (
+			indexOfOperator != -1 &&
+			indexOfOperator + 1 < types.size &&
+			types[indexOfOperator + 1] == ASSIGN
+		) {
 			indexOfComplexAssignment = indexOfOperator
 		}
 	}
@@ -277,7 +281,11 @@ private fun parseExpression(unsimplifiedTokens: List<Token>): Command {
 								elements.map { parseExpression(it) }
 							}
 						)
-					} else if (tokens[1].type == CLOSE_C && tokens[2].type == OPEN_S && tokens.last().type == CLOSE_S) {
+					} else if (
+						tokens[1].type == CLOSE_C &&
+						tokens[2].type == OPEN_S &&
+						tokens.last().type == CLOSE_S
+					) {
 						val indexTokens = tokens.drop(3).dropLast(1)
 
 						val index = parseExpression(indexTokens)
