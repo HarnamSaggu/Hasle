@@ -1,26 +1,11 @@
 fun main(args) {
-    println(foo({-1}).nums)
-    a = foo({foo({1}), foo({2}), foo({3, 4})})
-    println(a.fooString())
+	println(foo(readln().int()))
 }
 
-fun fooString(foo) {
-    str = "("
-    i = 0
-    while (i < foo.nums.len()) {
-        if (foo.nums[i].class() == "foo") {
-            str += foo.nums[i].fooString()
-        } else {
-            str += string(foo.nums[i])
-            if (i + 1 < foo.nums.len()) {
-                str += " "
-            }
-        }
-        i++
-    }
-    <- str + ")"
-}
-
-struct foo(nums) {
-    nums
+fun foo(num) {
+	if (num > 5) {
+		<- num.pow(2)
+		println("hello")
+	}
+	<- num
 }

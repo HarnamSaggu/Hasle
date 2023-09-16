@@ -157,7 +157,7 @@ class Editor : JFrame() {
 					}
 
 					val currentTime = System.currentTimeMillis()
-					if (currentTime - prevTime <= 200) {
+					if (currentTime - prevTime >= 500L) {
 						prevTime = currentTime
 						highlightText()
 					}
@@ -329,6 +329,8 @@ class Editor : JFrame() {
 		scrollPane.border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
 		scrollPane.verticalScrollBar.background = backgroundColor
 		scrollPane.horizontalScrollBar.background = backgroundColor
+		scrollPane.verticalScrollBar.unitIncrement = 16
+		scrollPane.horizontalScrollBar.unitIncrement = 8
 		class ScrollBarUI : BasicScrollBarUI() {
 			override fun configureScrollBarColors() {
 				scrollBarWidth = 15

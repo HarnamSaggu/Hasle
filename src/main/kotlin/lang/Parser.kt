@@ -43,14 +43,14 @@ fun parse(tokens: List<Token>): Pair<MainMethod, List<MethodDeclaration>> {
 			val items = itemiseTokens(section).toMutableList()
 
 			if (token.type == FUN) {
-				val returnStatement: Command = if (
+				val returnStatement = if (
 					items.isNotEmpty() &&
 					items.last().isNotEmpty() &&
 					items.last().first().type == RETURN
 				) {
-					parseItem(items.last()).also { items.removeLast() }
+					parseItem(items.last()).also { items.removeLast() } as Return
 				} else {
-					0.toValue()
+					Return(0.toValue())
 				}
 
 				methodDeclarations.add(
@@ -140,7 +140,7 @@ private fun parseItem(unsimplifiedTokens: List<Token>): Command {
 			else -> throw Error("Unrecognised Item: ${reproduceSourceCode(tokens)}")
 		}
 
-		RETURN -> parseExpression(tokens.drop(1))
+		RETURN -> Return(parseExpression(tokens.drop(1)))
 
 		else -> throw Error("Unrecognised Item: ${reproduceSourceCode(tokens)}")
 	}

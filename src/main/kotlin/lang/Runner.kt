@@ -70,8 +70,15 @@ class Runner(
 	init {
 		dataManager.setVariable("args", listOf(), ListData(args.map { StringData(it) }.toMutableList()), Pair(1, 0))
 
-		val exitCode = runSection(mainMethod.body, Pair(1, 0)) as IntData
-		standardLibrary.exit(exitCode.value.toInt())
+		val exitCode = runSection(mainMethod.body, Pair(1, 0))
+		standardLibrary.exit(
+			if (exitCode is ReturnData) {
+				(exitCode.value as IntData).value.toInt()
+			} else {
+				exitCode as IntData
+				exitCode.value.toInt()
+			}
+		)
 	}
 
 	private fun runSection(
@@ -81,6 +88,8 @@ class Runner(
 	): Data {
 		for (command in commands) {
 			when (command) {
+				is Return -> return ReturnData(evaluateExpression(command.value, stackLevel))
+
 				is Assignment -> {
 					val value = evaluateExpression(command.value, stackLevel)
 					val accessors = command.reference.accessors
@@ -103,15 +112,20 @@ class Runner(
 					val booleanExpression = (evaluateExpression(command.booleanExpression, stackLevel) as IntData).value
 					val newLevel = dataManager.nextStack(stackLevel)
 
-					runSection(
+					val sectionReturn = runSection(
 						if (booleanExpression > 0.toBigInteger()) {
 							command.firstBody
 						} else {
 							command.secondBody
-						}, newLevel
+						},
+						newLevel,
 					)
 
 					dataManager.popStack(newLevel)
+
+					if (sectionReturn is ReturnData) {
+						return sectionReturn
+					}
 				}
 
 				is While -> {
@@ -119,9 +133,13 @@ class Runner(
 					while (booleanExpression > 0.toBigInteger()) {
 						val newLevel = dataManager.nextStack(stackLevel)
 
-						runSection(command.body, newLevel)
+						val sectionReturn = runSection(command.body, newLevel)
 
 						dataManager.popStack(newLevel)
+
+						if (sectionReturn is ReturnData) {
+							return sectionReturn
+						}
 
 						booleanExpression = (evaluateExpression(command.booleanExpression, stackLevel) as IntData).value
 					}
@@ -131,7 +149,11 @@ class Runner(
 			}
 		}
 
-		return evaluateExpression(returnExpression, stackLevel)
+		return if (returnExpression is Return) {
+			evaluateExpression(returnExpression.value, stackLevel)
+		} else {
+			evaluateExpression(returnExpression, stackLevel)
+		}
 	}
 
 	private fun runMethod(methodCall: MethodCall, stackLevel: Pair<Int, Int>): Data {
@@ -159,11 +181,17 @@ class Runner(
 						}.toMutableMap()
 					)
 				} else {
-					runSection(
+					val sectionReturn = runSection(
 						methodDeclaration.body,
 						methodStackLevel,
 						methodDeclaration.returnStatement
 					)
+
+					if (sectionReturn is ReturnData) {
+						sectionReturn.value
+					} else {
+						sectionReturn
+					}
 				}
 
 				dataManager.removeMethodLevel()

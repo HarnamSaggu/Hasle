@@ -164,3 +164,5 @@ class ClassData(override val type: String, override val value: MutableMap<String
 		return "$type$value"
 	}
 }
+
+class ReturnData(override val value: Data): Data("return", value)

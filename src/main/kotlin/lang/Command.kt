@@ -14,7 +14,7 @@ open class MethodDeclaration(
 	val methodName: String,
 	open val parameters: List<String>,
 	val body: List<Command>,
-	val returnStatement: Command
+	val returnStatement: Return
 ) : Command() {
 	override fun toString(): String {
 		return "(method).{$methodName}.{$parameters}.{\n${body.joinToString("\n\t")}\n}"
@@ -25,7 +25,7 @@ class ClassDeclaration(
 	val className: String,
 	override val parameters: List<String>,
 	val fields: Map<String, Command>
-) : MethodDeclaration(className, parameters, listOf(), 0.toValue()) {
+) : MethodDeclaration(className, parameters, listOf(), Return(0.toValue())) {
 	override fun toString(): String {
 		return "(class).{$className}.{$parameters}.{\n${
 			fields.keys.joinToString("\n") {
@@ -94,6 +94,12 @@ class DefinedList(val elements: List<Command>) : Command() {
 class SizedList(val size: Command) : Command() {
 	override fun toString(): String {
 		return "(sized array).{$size}"
+	}
+}
+
+class Return(val value: Command) : Command() {
+	override fun toString(): String {
+		return "(return).{$value}"
 	}
 }
 
