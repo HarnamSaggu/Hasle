@@ -13,10 +13,7 @@ fun parse(tokens: List<Token>): Pair<MainMethod, List<MethodDeclaration>> {
 		val token = tokens[index]
 
 		if (index + 1 < tokens.size && token.type == FUN && tokens[index + 1].type == MAIN) {
-			val section = with(collectSection(tokens, index + 6)) {
-				index = second
-				first
-			}
+			val section = collectSection(tokens, index + 6) { newIndex -> index = newIndex}
 
 			mainMethod = MainMethod(
 				itemiseTokens(section).map {
@@ -36,10 +33,7 @@ fun parse(tokens: List<Token>): Pair<MainMethod, List<MethodDeclaration>> {
 				index++
 			}
 
-			val section = with(collectSection(tokens, index + 2)) {
-				index = second
-				first
-			}
+			val section = collectSection(tokens, index + 2) { newIndex -> index = newIndex }
 			val items = itemiseTokens(section).toMutableList()
 
 			if (token.type == FUN) {
@@ -87,34 +81,35 @@ private fun parseItem(unsimplifiedTokens: List<Token>): Command {
 	val tokens = expandSyntacticSugar(unsimplifiedTokens)
 	val first = tokens.first()
 	return when (first.type) {
-		IF, WHILE -> {
-			var index = 2
-			val booleanTokens = with(collectSection(tokens, index, OPEN)) {
-				index = second + 1
-				this.first
-			}
-			val booleanExpression = parseExpression(booleanTokens.toList())
-
-			val firstSectionTokens = with(collectSection(tokens, index + 1)) {
-				index = this.second
-				this.first
-			}
-			val firstSectionItems = itemiseTokens(firstSectionTokens)
-			val firstSection = firstSectionItems.map { parseItem(it) }
-
-			if (first.type == IF) {
-				val secondSection = if (index + 1 < tokens.size && tokens[index + 1].type == ELSE) {
-					val secondSectionTokens = tokens.dropLast(1).drop(index + 3)
-					val secondSectionItems = itemiseTokens(secondSectionTokens)
-					secondSectionItems.map { parseItem(it) }
-				} else {
-					listOf()
+		IF -> {
+			val sections = mutableListOf<Pair<Command, List<Command>>>()
+			var index = 0
+			while (index < tokens.size) {
+				if (tokens[index].type == IF) {
+					sections.add(with(parseIf(tokens, index)) {
+						index = this.first
+						second to third
+					})
+				} else if (tokens[index].type == OPEN_C) {
+					sections.add(1.toValue() to itemiseTokens(
+						collectSection(tokens, index + 1) { newIndex -> index = newIndex }
+					).map { parseItem(it) })
 				}
-
-				If(booleanExpression, firstSection, secondSection)
-			} else {
-				While(booleanExpression, firstSection)
+				if (index + 1 < tokens.size && tokens[index + 1].type == ELSE) {
+					index++
+				}
+				index++
 			}
+
+			If(sections)
+		}
+
+		WHILE -> {
+			var index = 2
+			val booleanTokens = collectSection(tokens, index, OPEN) { newIndex -> index = newIndex + 1 }
+			val booleanExpression = parseExpression(booleanTokens.toList())
+			val bodyTokens = collectSection(tokens, index + 1) { newIndex -> index = newIndex }
+			While(booleanExpression, itemiseTokens(bodyTokens).map { parseItem(it) })
 		}
 
 		GLOBAL -> parseAssignment(tokens)
@@ -218,6 +213,13 @@ private fun parseAssignment(tokens: List<Token>): Assignment {
 	)
 }
 
+private fun parseIf(tokens: List<Token>, startIndex: Int): Triple<Int, Command, List<Command>> {
+	var index = startIndex + 2
+	val booleanTokens = collectSection(tokens, index, OPEN) { newIndex -> index = newIndex }
+	val bodyTokens = collectSection(tokens, index + 2) { newIndex -> index = newIndex }
+	return Triple(index, parseExpression(booleanTokens.toList()), itemiseTokens(bodyTokens).map { parseItem(it) })
+}
+
 private fun parseVariableReference(tokens: List<Token>): Reference {
 	val name = tokens.first().value
 
@@ -231,10 +233,7 @@ private fun parseVariableReference(tokens: List<Token>): Reference {
 				Property(tokens[index + 1].value)
 			)
 		} else if (token.type == OPEN_S) {
-			val indexTokens = with(collectSection(tokens, index + 1, OPEN_S)) {
-				index = second
-				first
-			}
+			val indexTokens = collectSection(tokens, index + 1, OPEN_S) { newIndex -> index = newIndex }
 			accessors.add(
 				Index(parseExpression(indexTokens))
 			)
@@ -254,7 +253,7 @@ private fun parseExpression(unsimplifiedTokens: List<Token>): Command {
 		if (tokens.size >= 3 && tokens[1].type == OPEN) {
 			MethodCall(
 				first.value,
-				collectArguments(tokens, 2).first.map {
+				collectArguments(tokens, 2).map {
 					parseExpression(it)
 				}
 			)
@@ -273,7 +272,7 @@ private fun parseExpression(unsimplifiedTokens: List<Token>): Command {
 			else -> {
 				if (first.type == OPEN_C) {
 					if (tokens.last().type == CLOSE_C) {
-						val elements = collectArguments(tokens, 1).first
+						val elements = collectArguments(tokens, 1)
 						DefinedList(
 							if (elements.isEmpty()) {
 								listOf()
@@ -375,10 +374,7 @@ private fun itemiseExpressionTokens(tokens: List<Token>): Pair<List<Token>, List
 
 				accumulator.add(token)
 				accumulator.addAll(
-					with(collectSection(tokens, index + 1, token.type)) {
-						index = second
-						first
-					}
+					collectSection(tokens, index + 1, token.type) { newIndex -> index = newIndex }
 				)
 				accumulator.add(tokens[index])
 			}
@@ -403,42 +399,44 @@ private fun itemiseTokens(tokens: List<Token>): List<List<Token>> {
 	while (index < tokens.size) {
 		val token = tokens[index]
 
+		fun collectBooleanTokens() {
+			index++
+			accumulator.add(tokens[index])
+			val booleanTokens = collectSection(tokens, index + 1, OPEN) { newIndex -> index = newIndex }
+			accumulator.addAll(booleanTokens)
+			accumulator.add(tokens[index])
+			index++
+		}
+
 		when {
-			accumulator.isEmpty() && (token.type == IF || token.type == WHILE) -> {
-				accumulator.add(token)
-				index++
-				accumulator.add(tokens[index])
-				val booleanTokens = with(collectSection(tokens, index + 1, OPEN)) {
-					index = second
-					first
-				}
-				accumulator.addAll(booleanTokens)
-				accumulator.add(tokens[index])
-				index++
-				accumulator.add(tokens[index])
-				val mainSection = with(collectSection(tokens, index + 1)) {
-					index = second
-					first
-				}
-				accumulator.addAll(mainSection)
-				accumulator.add(tokens[index])
-
-				if (
-					index + 1 < tokens.size &&
-					token.type == IF &&
-					tokens[index + 1].type == ELSE
-				) {
-					accumulator.add(tokens[index + 1])
-					accumulator.add(tokens[index + 2])
-
-					accumulator.addAll(
-						with(collectSection(tokens, index + 3)) {
-							index = this.second
-							this.first
+			accumulator.isEmpty() && token.type == IF -> {
+				while (tokens[index].type != LINE_SEPARATOR) {
+					if (tokens[index].type == ELSE) {
+						accumulator.add(tokens[index])
+					} else {
+						if (tokens[index].type == IF) {
+							accumulator.add(tokens[index])
+							collectBooleanTokens()
 						}
-					)
-					accumulator.add(tokens[index])
+
+						accumulator.add(tokens[index])
+						val section = collectSection(tokens, index + 1) { newIndex -> index = newIndex }
+						accumulator.addAll(section)
+						accumulator.add(tokens[index])
+					}
+
+					index++
 				}
+				index--
+			}
+
+			accumulator.isEmpty() && token.type == WHILE -> {
+				accumulator.add(token)
+				collectBooleanTokens()
+				accumulator.add(tokens[index])
+				val section = collectSection(tokens, index + 1) { newIndex -> index = newIndex }
+				accumulator.addAll(section)
+				accumulator.add(tokens[index])
 			}
 
 			accumulator.isNotEmpty() && token.type == LINE_SEPARATOR -> {
@@ -461,7 +459,8 @@ private fun collectSection(
 	tokens: List<Token>,
 	startIndex: Int,
 	openType: Type = OPEN_C,
-): Pair<List<Token>, Int> {
+	updateState: (Int) -> Unit
+): List<Token> {
 	val closeType = when (openType) {
 		OPEN -> CLOSE
 		OPEN_S -> CLOSE_S
@@ -484,7 +483,8 @@ private fun collectSection(
 			section.add(token)
 			index++
 		} else if (count == 0) {
-			return section.toList() to index
+			updateState(index)
+			return section.toList()
 		}
 	}
 
@@ -494,7 +494,7 @@ private fun collectSection(
 private fun collectArguments(
 	tokens: List<Token>,
 	startIndex: Int
-): Pair<List<List<Token>>, Int> {
+): List<List<Token>> {
 	val arguments = mutableListOf<List<Token>>()
 
 	var index = startIndex
@@ -516,7 +516,7 @@ private fun collectArguments(
 					if (accumulator.isNotEmpty()) {
 						arguments.add(accumulator.toList())
 					}
-					return arguments.toList() to index
+					return arguments.toList()
 				}
 			}
 

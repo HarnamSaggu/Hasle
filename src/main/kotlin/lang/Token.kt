@@ -35,10 +35,10 @@ fun reproduceSourceCode(tokens: List<Token>): String =
 	tokens.joinToString("") {
 		it.type.symbol ?: when (it.type) {
 			NAME -> it.value
-			MAIN -> "main"
-			WHILE -> "while"
-			IF -> "if"
-			ELSE -> "else"
+			MAIN -> "main "
+			WHILE -> "while "
+			IF -> "if "
+			ELSE -> "else "
 			CLASS -> "class "
 			FUN -> "fun "
 

@@ -109,27 +109,25 @@ class Runner(
 				is MethodCall -> runMethod(command, stackLevel)
 
 				is If -> {
-					val booleanExpression = (evaluateExpression(command.booleanExpression, stackLevel) as IntData).value
-					val newLevel = dataManager.nextStack(stackLevel)
+					val section = command.sections.find {
+						(evaluateExpression(it.first, stackLevel) as IntData).value > 0.toBigInteger()
+					}?.second
+					if (section != null) {
+						val newLevel = dataManager.nextStack(stackLevel)
 
-					val sectionReturn = runSection(
-						if (booleanExpression > 0.toBigInteger()) {
-							command.firstBody
-						} else {
-							command.secondBody
-						},
-						newLevel,
-					)
+						val sectionReturn = runSection(section, newLevel)
 
-					dataManager.popStack(newLevel)
+						dataManager.popStack(newLevel)
 
-					if (sectionReturn is ReturnData) {
-						return sectionReturn
+						if (sectionReturn is ReturnData) {
+							return sectionReturn
+						}
 					}
 				}
 
 				is While -> {
-					var booleanExpression = (evaluateExpression(command.booleanExpression, stackLevel) as IntData).value
+					var booleanExpression =
+						(evaluateExpression(command.booleanExpression, stackLevel) as IntData).value
 					while (booleanExpression > 0.toBigInteger()) {
 						val newLevel = dataManager.nextStack(stackLevel)
 
@@ -141,7 +139,8 @@ class Runner(
 							return sectionReturn
 						}
 
-						booleanExpression = (evaluateExpression(command.booleanExpression, stackLevel) as IntData).value
+						booleanExpression =
+							(evaluateExpression(command.booleanExpression, stackLevel) as IntData).value
 					}
 				}
 

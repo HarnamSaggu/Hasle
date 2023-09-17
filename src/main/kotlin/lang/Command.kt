@@ -61,13 +61,10 @@ class MethodCall(val methodName: String, val arguments: List<Command>) : Command
 }
 
 class If(
-	val booleanExpression: Command,
-	val firstBody: List<Command>,
-	val secondBody: List<Command>
+	val sections: List<Pair<Command, List<Command>>>
 ) : Command() {
 	override fun toString(): String {
-		return "(if).{$booleanExpression}.{\n${firstBody.joinToString("\n\t")}" +
-		       ".{\n${secondBody.joinToString("\n\t")}"
+		return "(if).{$sections}"
 	}
 }
 
