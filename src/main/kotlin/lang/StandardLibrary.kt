@@ -11,23 +11,7 @@ import kotlin.system.exitProcess
 
 val zero = IntData(0)
 
-open class StandardLibrary(
-	val input: (() -> String) = {
-		readln()
-	},
-
-	val output: ((Any) -> Unit) = {
-		print(it)
-	},
-
-	val exit: ((Int) -> Any) = { x ->
-		exitProcess(x)
-	},
-
-	val sleep: ((Long) -> Any) = { x ->
-		Thread.sleep(x)
-	}
-) {
+open class StandardLibrary {
 	val methods: Map<String, (List<Data>) -> Data> = mapOf(
 		// MATHS
 		"add" to ::add,
@@ -60,44 +44,6 @@ open class StandardLibrary(
 		"int" to ::int,
 		"char" to ::char,
 		"bool" to ::bool,
-
-		// I/O
-		"readln" to { _ ->
-			StringData(input())
-		},
-		"print" to { args ->
-			output(args.joinToString(""))
-			zero
-		},
-		"println" to { args ->
-			output(args.joinToString("") + "\n")
-			zero
-		},
-		"sleep" to { args ->
-			if (args.size == 1 && args[0] is IntData) {
-				val a = args[0] as IntData
-				sleep(a.value.toLong())
-			} else {
-				throw ArgumentTypeError("sleep", args)
-			}
-
-			zero
-		},
-		"exit" to { args ->
-			if (args.size == 1 && args[0] is IntData) {
-				val a = args[0] as IntData
-				exit(a.value.toInt())
-			} else {
-				exit(0)
-			}
-			throw Error("Could not terminate program using: exit")
-		},
-		"readFile" to ::readFile,
-		"writeFile" to ::writeFile,
-		"readBytes" to ::readBytes,
-		"writeBytes" to ::writeBytes,
-		"time" to ::time,
-		"dateTime" to ::dateTime,
 
 		// LOGIC
 		"equals" to ::equalsData,
@@ -133,9 +79,22 @@ open class StandardLibrary(
 		"get" to ::get,
 		"at" to ::at,
 		"fields" to ::fields,
+
+		// I/O
+		"readFile" to ::readFile,
+		"writeFile" to ::writeFile,
+		"readBytes" to ::readBytes,
+		"writeBytes" to ::writeBytes,
+		"time" to ::time,
+		"dateTime" to ::dateTime,
+		"readln" to ::input,
+		"print" to ::printData,
+		"println" to ::printlnData,
+		"sleep" to ::sleep,
+		"exit" to ::exit,
 	)
 
-	private fun add(args: List<Data>): Data {
+	open fun add(args: List<Data>): Data {
 		return if (args.size == 2) {
 			val a = args[0]
 			val b = args[1]
@@ -152,7 +111,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun sub(args: List<Data>): Data {
+	open fun sub(args: List<Data>): Data {
 		return if (args.size == 2) {
 			val a = args[0]
 			val b = args[1]
@@ -168,7 +127,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun mult(args: List<Data>): Data {
+	open fun mult(args: List<Data>): Data {
 		return if (args.size == 2) {
 			val a = args[0]
 			val b = args[1]
@@ -184,7 +143,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun div(args: List<Data>): Data {
+	open fun div(args: List<Data>): Data {
 		return if (args.size == 2) {
 			val a = args[0]
 			val b = args[1]
@@ -209,7 +168,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun pow(args: List<Data>): Data {
+	open fun pow(args: List<Data>): Data {
 		return if (args.size == 2) {
 			val a = args[0]
 			val b = args[1]
@@ -225,7 +184,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun mod(args: List<Data>): Data {
+	open fun mod(args: List<Data>): Data {
 		return if (args.size == 2) {
 			val a = args[0]
 			val b = args[1]
@@ -239,7 +198,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun ln(args: List<Data>): Data {
+	open fun ln(args: List<Data>): Data {
 		return if (args.size == 1) {
 			val a = args[0]
 			if (a is DecimalData) {
@@ -252,7 +211,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun log(args: List<Data>): Data {
+	open fun log(args: List<Data>): Data {
 		return if (args.size == 2) {
 			val a = args[0]
 			val b = args[1]
@@ -266,7 +225,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun sqrt(args: List<Data>): Data {
+	open fun sqrt(args: List<Data>): Data {
 		return if (args.size == 1) {
 			val a = args[0]
 			if (a is DecimalData) {
@@ -279,7 +238,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun nthrt(args: List<Data>): Data {
+	open fun nthrt(args: List<Data>): Data {
 		return if (args.size == 2) {
 			val a = args[0]
 			val b = args[1]
@@ -293,7 +252,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun sin(args: List<Data>): Data {
+	open fun sin(args: List<Data>): Data {
 		return if (args.size == 1) {
 			val a = args[0]
 			if (a is DecimalData) {
@@ -306,7 +265,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun cos(args: List<Data>): Data {
+	open fun cos(args: List<Data>): Data {
 		return if (args.size == 1) {
 			val a = args[0]
 			if (a is DecimalData) {
@@ -319,7 +278,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun tan(args: List<Data>): Data {
+	open fun tan(args: List<Data>): Data {
 		return if (args.size == 1) {
 			val a = args[0]
 			if (a is DecimalData) {
@@ -332,7 +291,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun asin(args: List<Data>): Data {
+	open fun asin(args: List<Data>): Data {
 		return if (args.size == 1) {
 			val a = args[0]
 			if (a is DecimalData) {
@@ -345,7 +304,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun acos(args: List<Data>): Data {
+	open fun acos(args: List<Data>): Data {
 		return if (args.size == 1) {
 			val a = args[0]
 			if (a is DecimalData) {
@@ -358,7 +317,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun atan(args: List<Data>): Data {
+	open fun atan(args: List<Data>): Data {
 		return if (args.size == 1) {
 			val a = args[0]
 			if (a is DecimalData) {
@@ -371,7 +330,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun pi(args: List<Data>): Data {
+	open fun pi(args: List<Data>): Data {
 		val length = if (args.size == 1 && args[0] is IntData) {
 			(args[0] as IntData).value.toInt()
 		} else {
@@ -381,7 +340,7 @@ open class StandardLibrary(
 		return DecimalData(pi(MathContext(length)))
 	}
 
-	private fun e(args: List<Data>): Data {
+	open fun e(args: List<Data>): Data {
 		val length = if (args.size == 1 && args[0] is IntData) {
 			(args[0] as IntData).value.toInt()
 		} else {
@@ -391,7 +350,7 @@ open class StandardLibrary(
 		return DecimalData(exp(MathContext(length)))
 	}
 
-	private fun rand(args: List<Data>): Data {
+	open fun rand(args: List<Data>): Data {
 		if (args.isEmpty()) {
 			return DecimalData(BigDecimal(Math.random()))
 		} else {
@@ -399,7 +358,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun ceil(args: List<Data>): Data {
+	open fun ceil(args: List<Data>): Data {
 		return if (args.size == 1) {
 			val a = args[0]
 			if (a is DecimalData) {
@@ -412,7 +371,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun roundData(args: List<Data>): Data {
+	open fun roundData(args: List<Data>): Data {
 		return if (args.size == 1) {
 			val a = args[0]
 			if (a is DecimalData) {
@@ -425,7 +384,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun floor(args: List<Data>): Data {
+	open fun floor(args: List<Data>): Data {
 		return if (args.size == 1) {
 			val a = args[0]
 			if (a is DecimalData) {
@@ -438,7 +397,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun min(args: List<Data>): Data {
+	open fun min(args: List<Data>): Data {
 		return if (args.size == 2) {
 			val a = args[0]
 			val b = args[1]
@@ -454,7 +413,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun max(args: List<Data>): Data {
+	open fun max(args: List<Data>): Data {
 		return if (args.size == 2) {
 			val a = args[0]
 			val b = args[1]
@@ -470,7 +429,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun dec(args: List<Data>): Data {
+	open fun dec(args: List<Data>): Data {
 		return DecimalData(
 			when {
 				args.size == 2 && args[0] is DecimalData && args[1] is IntData -> {
@@ -496,7 +455,7 @@ open class StandardLibrary(
 		)
 	}
 
-	private fun int(args: List<Data>): Data {
+	open fun int(args: List<Data>): Data {
 		return if (args.size == 1) {
 			IntData(
 				when (val a = args[0]) {
@@ -511,7 +470,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun char(args: List<Data>): Data {
+	open fun char(args: List<Data>): Data {
 		return if (args.size == 1 && args[0] is IntData) {
 			val a = args[0] as IntData
 			CharData(a.value.toInt().toChar())
@@ -520,7 +479,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun bool(args: List<Data>): Data {
+	open fun bool(args: List<Data>): Data {
 		return if (args.size == 1 && args[0] is IntData) {
 			val a = args[0] as IntData
 			StringData(if (a.value <= zero.value) "false" else "true")
@@ -529,7 +488,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun readFile(args: List<Data>): Data {
+	open fun readFile(args: List<Data>): Data {
 		return if (args.size == 1 && args[0] is StringData) {
 			val a = args[0] as StringData
 			StringData(File(a.value).readText())
@@ -538,7 +497,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun writeFile(args: List<Data>): Data {
+	open fun writeFile(args: List<Data>): Data {
 		if (args.size == 2 && args[0] is StringData && args[1] is StringData) {
 			val a = args[0] as StringData
 			val b = args[1] as StringData
@@ -550,7 +509,7 @@ open class StandardLibrary(
 		return zero
 	}
 
-	private fun readBytes(args: List<Data>): Data {
+	open fun readBytes(args: List<Data>): Data {
 		return if (args.size == 1 && args[0] is StringData) {
 			val a = args[0] as StringData
 			ListData(File(a.value).readBytes().map { byte ->
@@ -561,7 +520,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun writeBytes(args: List<Data>): Data {
+	open fun writeBytes(args: List<Data>): Data {
 		if (args.size == 2 && args[0] is StringData && args[1] is ListData) {
 			val a = args[0] as StringData
 			val b = args[1] as ListData
@@ -577,7 +536,7 @@ open class StandardLibrary(
 		return zero
 	}
 
-	private fun time(args: List<Data>): Data {
+	open fun time(args: List<Data>): Data {
 		if (args.isEmpty()) {
 			return IntData(System.currentTimeMillis().toBigInteger())
 		} else {
@@ -585,23 +544,60 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun dateTime(args: List<Data>): Data {
+	open fun dateTime(args: List<Data>): Data {
 		if (args.isEmpty()) {
 			return StringData(LocalDateTime.now().toString())
 		} else {
 			throw ArgumentSizeError("dateTime", args)
 		}
 	}
+	
+	open fun input(args: List<Data>): Data {
+		if (args.isNotEmpty()) {
+			printData(args)
+		}
+		return StringData(readln())
+	}
 
-	private fun equalsData(args: List<Data>): Data {
+	open fun printData(args: List<Data>): Data {
+		print(args.joinToString(""))
+		return zero
+	}
+
+	open fun printlnData(args: List<Data>): Data {
+		println(args.joinToString(""))
+		return zero
+	}
+
+	open fun sleep(args: List<Data>): Data {
+		if (args.size == 1 && args[0] is IntData) {
+			val a = args[0] as IntData
+			Thread.sleep(a.value.toLong())
+		} else {
+			throw ArgumentTypeError("sleep", args)
+		}
+
+		return zero
+	}
+
+	open fun exit(args: List<Data>): Data {
+		if (args.size == 1 && args[0] is IntData) {
+			val a = args[0] as IntData
+			exitProcess(a.value.toInt())
+		} else {
+			exitProcess(0)
+		}
+	}
+
+	open fun equalsData(args: List<Data>): Data {
 		return (args.size == 2 && args[0] == args[1]).toIntData()
 	}
 
-	private fun notEquals(args: List<Data>): Data {
+	open fun notEquals(args: List<Data>): Data {
 		return (args.size == 2 && args[0] != args[1]).toIntData()
 	}
 
-	private fun greater(args: List<Data>): Data {
+	open fun greater(args: List<Data>): Data {
 		return if (args.size == 2) {
 			val a = args[0]
 			val b = args[1]
@@ -617,7 +613,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun less(args: List<Data>): Data {
+	open fun less(args: List<Data>): Data {
 		return if (args.size == 2) {
 			val a = args[0]
 			val b = args[1]
@@ -633,7 +629,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun greaterEquals(args: List<Data>): Data {
+	open fun greaterEquals(args: List<Data>): Data {
 		return if (args.size == 2) {
 			val a = args[0]
 			val b = args[1]
@@ -649,7 +645,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun lessEquals(args: List<Data>): Data {
+	open fun lessEquals(args: List<Data>): Data {
 		return if (args.size == 2) {
 			val a = args[0]
 			val b = args[1]
@@ -665,7 +661,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun not(args: List<Data>): Data {
+	open fun not(args: List<Data>): Data {
 		return if (args.size == 1 && args[0] is IntData) {
 			(args[0] == zero).toIntData()
 		} else {
@@ -673,7 +669,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun and(args: List<Data>): Data {
+	open fun and(args: List<Data>): Data {
 		return if (args.size == 2) {
 			val a = args[0]
 			val b = args[1]
@@ -687,7 +683,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun or(args: List<Data>): Data {
+	open fun or(args: List<Data>): Data {
 		return if (args.size == 2) {
 			val a = args[0]
 			val b = args[1]
@@ -701,7 +697,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun len(args: List<Data>): Data {
+	open fun len(args: List<Data>): Data {
 		return if (args.size == 1) {
 			IntData(
 				when (val a = args[0]) {
@@ -715,7 +711,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun contains(args: List<Data>): Data {
+	open fun contains(args: List<Data>): Data {
 		return if (args.size == 2) {
 			val a = args[0]
 			val b = args[1]
@@ -731,7 +727,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun replaceFirst(args: List<Data>): Data {
+	open fun replaceFirst(args: List<Data>): Data {
 		return if (args.size == 3 && args[0] is StringData && args[1] is StringData && args[2] is StringData) {
 			val a = args[0] as StringData
 			val b = args[1] as StringData
@@ -742,7 +738,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun replace(args: List<Data>): Data {
+	open fun replace(args: List<Data>): Data {
 		return if (args.size == 3 && args[0] is StringData && args[1] is StringData && args[2] is StringData) {
 			val a = args[0] as StringData
 			val b = args[1] as StringData
@@ -753,7 +749,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun split(args: List<Data>): Data {
+	open fun split(args: List<Data>): Data {
 		return if (args.size == 2 && args[0] is StringData && args[1] is StringData) {
 			val a = args[0] as StringData
 			val b = args[1] as StringData
@@ -763,7 +759,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun substring(args: List<Data>): Data {
+	open fun substring(args: List<Data>): Data {
 		return if (args.size == 3 && args[0] is StringData && args[1] is IntData && args[2] is IntData) {
 			val a = args[0] as StringData
 			val b = args[1] as IntData
@@ -774,7 +770,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun string(args: List<Data>): Data {
+	open fun string(args: List<Data>): Data {
 		return if (args.size == 1) {
 			StringData(args[0].toString())
 		} else {
@@ -782,7 +778,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun uppercase(args: List<Data>): Data {
+	open fun uppercase(args: List<Data>): Data {
 		return if (args.size == 1 && args[0] is StringData) {
 			val a = args[0] as StringData
 			StringData(a.value.uppercase())
@@ -791,7 +787,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun lowercase(args: List<Data>): Data {
+	open fun lowercase(args: List<Data>): Data {
 		return if (args.size == 1 && args[0] is StringData) {
 			val a = args[0] as StringData
 			StringData(a.value.lowercase())
@@ -800,7 +796,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun addAll(args: List<Data>): Data {
+	open fun addAll(args: List<Data>): Data {
 		return if (args.size == 2 && args[0] is ListData && args[1] is ListData) {
 			val a = args[0] as ListData
 			val b = args[1] as ListData
@@ -810,7 +806,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun remove(args: List<Data>): Data {
+	open fun remove(args: List<Data>): Data {
 		return if (args.size == 2 && args[0] is ListData) {
 			val a = (args[0] as ListData).value.toMutableList()
 			val b = args[1]
@@ -821,7 +817,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun removeAt(args: List<Data>): Data {
+	open fun removeAt(args: List<Data>): Data {
 		return if (args.size == 2 && args[0] is ListData && args[1] is IntData) {
 			val a = (args[0] as ListData).value.toMutableList()
 			val b = args[1] as IntData
@@ -832,7 +828,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun subList(args: List<Data>): Data {
+	open fun subList(args: List<Data>): Data {
 		return if (args.size == 3 && args[0] is ListData && args[1] is IntData && args[2] is IntData) {
 			val a = args[0] as ListData
 			val b = args[1] as IntData
@@ -843,7 +839,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun indexOf(args: List<Data>): Data {
+	open fun indexOf(args: List<Data>): Data {
 		return if (args.size == 2 && args[0] is ListData) {
 			val a = args[0] as ListData
 			IntData(a.value.indexOf(args[1].value))
@@ -852,7 +848,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun classData(args: List<Data>): Data {
+	open fun classData(args: List<Data>): Data {
 		return if (args.size == 1) {
 			StringData(args[0].type)
 		} else {
@@ -860,7 +856,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun copyData(args: List<Data>): Data {
+	open fun copyData(args: List<Data>): Data {
 		return if (args.size == 1) {
 			copy(args[0])
 		} else {
@@ -868,7 +864,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun set(args: List<Data>): Data {
+	open fun set(args: List<Data>): Data {
 		if (args.size == 3) {
 			val a = args[0]
 			val b = args[1]
@@ -882,7 +878,7 @@ open class StandardLibrary(
 		return zero
 	}
 
-	private fun get(args: List<Data>): Data {
+	open fun get(args: List<Data>): Data {
 		return if (args.size == 2) {
 			val a = args[0]
 			val b = args[1]
@@ -896,7 +892,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun at(args: List<Data>): Data {
+	open fun at(args: List<Data>): Data {
 		return if (args.size == 2) {
 			val a = args[0]
 			val b = args[1]
@@ -912,7 +908,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun fields(args: List<Data>): Data {
+	open fun fields(args: List<Data>): Data {
 		return if (args.size == 1 && args[0] is ClassData) {
 			ListData((args[0] as ClassData).value.keys.map { x -> StringData(x) }.toMutableList())
 		} else {
@@ -920,7 +916,7 @@ open class StandardLibrary(
 		}
 	}
 
-	private fun copy(x: Data): Data =
+	open fun copy(x: Data): Data =
 		when (x) {
 			is IntData -> IntData(x.value)
 			is DecimalData -> DecimalData(x.value)
@@ -937,10 +933,9 @@ open class StandardLibrary(
 		}
 
 
-	private fun Boolean.toIntData(): IntData = if (this) IntData(1) else IntData(0)
+	open fun Boolean.toIntData(): IntData = if (this) IntData(1) else IntData(0)
 
-	private fun BigInteger.toBoolean() = this > zero.value
-
+	open fun BigInteger.toBoolean() = this > zero.value
 
 	class ArgumentSizeError(methodName: String, args: List<Data>) :
 		Error("Wrong number of arguments for $methodName: $args")

@@ -1,7 +1,6 @@
 package lang
 
 import java.io.File
-import kotlin.system.exitProcess
 
 fun run(mainFile: File, args: List<String>) {
 	var mainMethod = MainMethod(listOf())
@@ -57,12 +56,7 @@ class Runner(
 	mainMethod: MainMethod,
 	methodDeclarations: List<MethodDeclaration>,
 	args: List<String>,
-	private val standardLibrary: StandardLibrary = StandardLibrary(
-		{ readln() },
-		{ print(it) },
-		{ x -> exitProcess(x) },
-		{ x -> Thread.sleep(x) }
-	)
+	private val standardLibrary: StandardLibrary = StandardLibrary()
 ) {
 	private val dataManager: DataManager = DataManager()
 	private val methodMap = methodDeclarations.associateBy { it.methodName }
@@ -71,14 +65,13 @@ class Runner(
 		dataManager.setVariable("args", listOf(), ListData(args.map { StringData(it) }.toMutableList()), Pair(1, 0))
 
 		val exitCode = runSection(mainMethod.body, Pair(1, 0))
-		standardLibrary.exit(
+		standardLibrary.exit(listOf(
 			if (exitCode is ReturnData) {
-				(exitCode.value as IntData).value.toInt()
+				exitCode.value as IntData
 			} else {
-				exitCode as IntData
-				exitCode.value.toInt()
+				exitCode
 			}
-		)
+		))
 	}
 
 	private fun runSection(
