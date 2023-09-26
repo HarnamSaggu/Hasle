@@ -551,7 +551,7 @@ open class StandardLibrary {
 			throw ArgumentSizeError("dateTime", args)
 		}
 	}
-	
+
 	open fun input(args: List<Data>): Data {
 		if (args.isNotEmpty()) {
 			printData(args)

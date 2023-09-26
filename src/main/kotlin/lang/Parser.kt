@@ -13,7 +13,7 @@ fun parse(tokens: List<Token>): Pair<MainMethod, List<MethodDeclaration>> {
 		val token = tokens[index]
 
 		if (index + 1 < tokens.size && token.type == FUN && tokens[index + 1].type == MAIN) {
-			val section = collectSection(tokens, index + 6) { newIndex -> index = newIndex}
+			val section = collectSection(tokens, index + 6) { newIndex -> index = newIndex }
 
 			mainMethod = MainMethod(
 				itemiseTokens(section).map {

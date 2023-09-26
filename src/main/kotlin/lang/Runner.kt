@@ -65,13 +65,15 @@ class Runner(
 		dataManager.setVariable("args", listOf(), ListData(args.map { StringData(it) }.toMutableList()), Pair(1, 0))
 
 		val exitCode = runSection(mainMethod.body, Pair(1, 0))
-		standardLibrary.exit(listOf(
-			if (exitCode is ReturnData) {
-				exitCode.value as IntData
-			} else {
-				exitCode
-			}
-		))
+		standardLibrary.exit(
+			listOf(
+				if (exitCode is ReturnData) {
+					exitCode.value as IntData
+				} else {
+					exitCode
+				}
+			)
+		)
 	}
 
 	private fun runSection(
