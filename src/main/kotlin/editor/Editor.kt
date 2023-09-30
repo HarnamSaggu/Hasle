@@ -561,7 +561,8 @@ class Editor : JFrame() {
 			if (index + 1 < length && currentChar == '"') {
 				index++
 				while (index < length && sourceCode[index] != '"') {
-					if (index + 1 < length && sourceCode[index] == '\\' && sourceCode[index + 1] == '"') {
+					if (index + 1 < length && sourceCode[index] == '\\' &&
+					    "\"\\\t\b\r\n".contains(sourceCode[index + 1])) {
 						index++
 					}
 
