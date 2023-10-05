@@ -59,6 +59,7 @@ open class StandardLibrary {
 		// STRING, LISTS
 		"len" to ::len,
 		"contains" to ::contains,
+		"matches" to ::matches,
 		"replaceFirst" to ::replaceFirst,
 		"replace" to ::replace,
 		"split" to ::split,
@@ -724,6 +725,16 @@ open class StandardLibrary {
 			}
 		} else {
 			throw ArgumentSizeError("contains", args)
+		}
+	}
+
+	open fun matches(args: List<Data>): Data {
+		return if (args.size == 2 && args[0] is StringData && args[1] is StringData) {
+			val a = args[0] as StringData
+			val b = args[1] as StringData
+			a.value.matches(Regex(b.value)).toIntData()
+		} else {
+			throw ArgumentTypeError("replaceFirst", args)
 		}
 	}
 
